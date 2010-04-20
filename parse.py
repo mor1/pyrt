@@ -22,7 +22,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: parse.py,v 1.8 2002/01/26 23:55:15 mort Exp $
+# $Id: parse.py,v 1.9 2002/02/06 16:58:46 mort Exp $
 #
 
 # Dummy script to demonstrate basics of parsing MRTd dump files.
@@ -98,11 +98,30 @@ if __name__ == "__main__":
                 if (((START_T < 0) or (msg[0] >= START_T)) and
                     ((END_T   < 0) or (msg[0] <= END_T))):
 
-                    v   = not not VERBOSE
-                    rv  = mrt.parse(msg, v)
+                    rv  = mrt.parse(msg, VERBOSE)
                     cnt = cnt + 1
                     if VERBOSE > 1:
                         pprint.pprint(rv)
+
+                    if ((rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP"] and
+                         rv["ST"] == mrtd.BGP_SUBTYPES["UPDATE"])
+                        or
+                        (rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP4MP"] and
+                         rv["ST"] == mrtd.BGP4MP_SUBTYPES["MESSAGE"] and
+                         rv["V"]["T"] == bgp.MSG_TYPES["UPDATE"])
+                        or
+                        (rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP4PY"] and
+                         rv["ST"] == mrtd.BGP4MP_SUBTYPES["MESSAGE"] and
+                         rv["V"]["T"] == bgp.MSG_TYPES["UPDATE"])
+                        ):
+                        for pfx in rv["V"]["V"]["UNFEASIBLE"]:
+                            if pfx == ('\240Q\3514', 30):
+                                print 'WITHDRAW:',
+                                pprint.pprint(rv)
+                        for pfx in rv["V"]["V"]["FEASIBLE"]:
+                            if pfx == ('\240Q\3514', 30):
+                                print 'ANNOUNCE:',
+                                pprint.pprint(rv)
 
         except (mrtd.EOFExc):
             error("end of file: %u messages\n" % cnt)

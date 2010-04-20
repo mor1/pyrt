@@ -24,7 +24,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: splice.py,v 1.7 2002/01/26 23:55:15 mort Exp $
+# $Id: splice.py,v 1.8 2002/02/06 16:58:46 mort Exp $
 #
 
 import time, getopt, sys, mrtd, string, os
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 
         msgs.sort()
         of = open(file_pfx+
-                  time.strftime(extn_fmt, time.localtime(msgs[0]._time)),
+                  time.strftime(extn_fmt, time.gmtime(msgs[0]._time)),
                   "w+b")
 
         while len(msgs) > 0:            

@@ -22,7 +22,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: bgp.py,v 1.19 2001/12/12 21:59:46 mort Exp $
+# $Id: bgp.py,v 1.20 2002/02/06 16:58:45 mort Exp $
 #
 
 import struct, socket, sys, math, getopt, string, os.path, time
@@ -61,8 +61,6 @@ MSG_TYPES = { 1L: "OPEN",
               3L: "NOTIFICATION",
               4L: "KEEPALIVE",
               5L: "ROUTE_REFRESH",
-
-              # XXX for parsing TABLE_DUMPs
               6L: "TABLE_DUMP_ENTRY",
               }
 DLIST = DLIST + [MSG_TYPES]
@@ -641,6 +639,7 @@ def parseTableEntry(length, entries, verbose=1, level=0):
         print level*INDENT + "updated: '%s'" % (time.ctime(uptime),)
 
     entries = entries[TABLE_DUMP_ENTRY_HDR_LEN:]
+    rv["V"]["ATTRS"] = entries
 
     # XXX This should reuse part of bgp.parseUpdate() -- need to further
     # separate out the path attr. parsing.  Cut'n'paste for now since I'm in
@@ -685,10 +684,10 @@ def parseTableEntry(length, entries, verbose=1, level=0):
 
         if verbose:
             print astr + flgs_str
-
         entries = entries[2+flg_extlen+1+alen:]
         elen    = elen - (2+flg_extlen+1+alen)
-            
+
+    if verbose: print
     return rv
 
 ################################################################################

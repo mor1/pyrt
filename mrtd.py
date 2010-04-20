@@ -23,10 +23,10 @@
 ##     02111-1307 USA
 
 #
-# $Id: mrtd.py,v 1.22 2002/01/26 23:55:15 mort Exp $
+# $Id: mrtd.py,v 1.23 2002/02/06 16:58:46 mort Exp $
 #
 
-import os, time, struct, getopt, sys, bgp, isis, math
+import os, time, struct, getopt, sys, bgp, isis, math, pprint
 from mutils import *
 
 #-------------------------------------------------------------------------------
@@ -90,8 +90,9 @@ BGP_SUBTYPES = { 0L: "NULL",
 
                  # XXX RMM XXX apparently bogo-extensions for some of RIS data?
                  # See, eg., updates.20000814.1631
-                 
-                 7L: "BOGO_RIS_EXTN_1",                
+
+                 5L: "BOGO_RIS_EXTN_1",
+                 7L: "BOGO_RIS_EXTN_2",                
                  
                  # XXX RMM XXX extensions for other raw messages
                  129L: "OPEN",
@@ -192,17 +193,6 @@ def parseBgp4pyMrtHdr(hdr, verbose=1, level=0):
 
     return src_as, dst_as, ifc, afi, src_ip, dst_ip, ts_frac
     
-#-------------------------------------------------------------------------------
-
-def parseBgpTableEntry(msg_len, msg, verbose=1, level=0):
-
-    rv = {"T": MSG_TYPES[""],
-          "L": msg_len,
-          "V": None
-          }
-
-    return rv
-
 ################################################################################
 
 class EOFExc(Exception): pass
@@ -226,7 +216,8 @@ class Mrtd:
         if not mrt_type:
             self._file_name = file_pfx
         else:
-            self._file_name = file_pfx + time.strftime(Mrtd._extn_fmt)
+            self._file_name = file_pfx +\
+                              time.strftime(Mrtd._extn_fmt, time.gmtime())
 
         self._file_size = file_size
         self._file_mode = file_mode
@@ -245,7 +236,8 @@ class Mrtd:
 
         if self._of.tell() + len(msg) > self._file_size:
             self._of.close()
-            self._file_name = self._file_pfx + time.strftime(Mrtd._extn_fmt)
+            self._file_name = self._file_pfx +\
+                              time.strftime(Mrtd._extn_fmt, time.gmtime())
             self._of = open(self._file_name, self._file_mode)
             
         self._of.write(msg)
@@ -381,7 +373,8 @@ class Mrtd:
                "V":  {}
                }
 
-        if psubtype == BGP_SUBTYPES['BOGO_RIS_EXTN_1']:
+        if psubtype in (BGP_SUBTYPES['BOGO_RIS_EXTN_1'],
+                        BGP_SUBTYPES['BOGO_RIS_EXTN_2']):
             print INDENT*level + '[ *** skipping *** ]'
             return rv
         
@@ -652,14 +645,6 @@ class Mrtd:
     
     #---------------------------------------------------------------------------
 
-    def writeTableDump(self, ptype, plen, pkt):
-
-        # XXX WRITE ME : want to use this so that processing of BGP
-        # data can be 'seeded' with a table state before the UPDATE
-        # stream begins.
-        
-        pass
-
     def parseTableDump(self, psubtype, plen, pdata, verbose=1, level=0):
 
         rv = { "T":  MSG_TYPES["TABLE_DUMP"],
@@ -677,7 +662,7 @@ class Mrtd:
         rv["H"]["VIEW"]  = view
         rv["H"]["SEQNO"] = seqno
                                     
-        if verbose > 0:
+        if verbose:
             print INDENT*level + "view: %d, seqno: %d" % (view, seqno)
 
         pdata = pdata[TABLE_DUMP_HDR_LEN:]
