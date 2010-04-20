@@ -1,0 +1,483 @@
+   =====================================================================
+
+                     PyRT: Python Routeing Toolkit
+
+                  Parse function return value formats
+
+   Copyright (C) 2001 Richard Mortier <mort@sprintlabs.com>, Sprint ATL
+
+   =====================================================================
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+   USA
+
+   =====================================================================
+
+1. Purpose
+   -------
+
+   The purpose of this document is to describe the return value
+   formats used by the protocol modules in PyRT.  There are currently
+   two such modules: BGP (bgp.py) and ISIS (isis.py).  Extra
+   information is available when parsing is via the MRTD module
+   (mrtd.py).  All return values ('RVs') are dictionaries with three
+   common top-level keys:
+
+   'T' : type
+   'ST': subtype
+   'L' : length
+   'V' : value
+   'H' : mrtd header
+
+   =====================================================================
+
+2. mrtd.py
+   -------
+
+   This section describes the top-level RV extensions made when
+   parsing via mrtd.py rather than directly via the protocol modules.
+
+    --------------------------------------------------------------------
+
+2.1 BGP
+
+    The subtype is the MRTD BGP4/BGP4MP/BGP4PY subtype value.
+   
+    The header for type:BGP4 is a dictionary formatted as:
+
+    'TIME'  : time
+    'SRC_AS': source AS
+    'DST_AS': destination AS
+    'SRC_IP': source IP address
+    'DST_IP': destination IP address
+
+    The header for type:BGP4MP and BGP4PY is as for type:BGP4 with two
+    additional fields:
+
+    'IFC': interface code
+    'AFI': address family indicator
+
+    --------------------------------------------------------------------
+
+2.2 ISIS
+
+    The subtype is NULL.  The header for type:ISIS is also null.  The
+    header for type:ISIS2 includes the sub-second part of the
+    timestamp.
+
+    --------------------------------------------------------------------
+
+2.3 TABLE_DUMP
+
+    XXX WRITE ME
+
+   =====================================================================
+
+3. bgp.py
+   ------
+
+   Valid type values are:
+
+   1: OPEN
+   2: UPDATE
+   3: NOTIFICATION
+   4: KEEPALIVE
+   5: ROUTE_REFRESH
+
+   The length field is the (integer) length of the message in question
+   in octets.  
+
+   The header field is a dictionary formatted as given in section 2.1.
+
+   The value field is formatted as specified below.
+
+    --------------------------------------------------------------------
+
+3.1 OPEN   
+
+    Value field is a dictionary formatted as:
+
+    'VER' : BGP version
+    'AS'  : source AS number
+    'HT'  : holdtime
+    'ID'  : source BGP ID
+    'OPTS': [options]
+
+    [options] is a list of parsed options, each option represented as
+    a dictionary, formatted as:
+
+    'T' : option typecode
+    'L' : option length (octets)
+    'V' : {option value}
+
+    Currently parsed options and their typecodes are:
+
+    'T': 2 (CAPABILITY)
+    'V': { 'T': capability type
+           'L': capability length (octets)
+           'V': {capability value} }
+
+    Currently valid capability types with associated values are:
+
+    0  : UNDEFINED
+         { 'AFI' : address family indicator
+           'SAFI': subaddress family indicator }
+    1  : MULTIPROTOCOL_EXT
+    2  : ROUTE_REFRESH
+    128: ROUTE_REFRESH_Z (Zebra specific extension)
+
+    --------------------------------------------------------------------
+
+3.2 UPDATE
+
+    Value is a dictionary formatted as:
+
+    'UNFEASIBLE': [list of withdrawn prefixes]
+    'FEASIBLE'  : [list of advertised prefixes]
+    'PATH_ATTRS': {dictionary of path attributes}
+
+    Each 'prefix' is a tuple consisting of (<prefix>,<prefix
+    length>).  The dictionary of path attributes is keyed on path
+    attribute type with a value itself a dictionary:
+
+    'T'    : path attribute type code, as above
+    'L'    : length of path attribute (octets)
+    'V'    : path attribute value
+    'FLAGS': { 'optional'  : [0|1],
+               'transitive': [0|1],
+               'partial'   : [0|1],
+               'ext_len'   : [0|1] }
+
+
+    Valid type/value pairs are formatted as:
+
+    1 : ORIGIN
+        { 'V': 0 -- IGP
+               1 -- EGP
+               2 -- INCOMPLETE
+               }
+    2 : AS_PATH
+        { 'V': [ AS PATH segments ] }
+        Each AS PATH segment is a dictionary:
+         { 'T': 1 -- SET
+                2 -- SEQUENCE
+                3 -- CONFED_SET
+                4 -- CONFED_SEQUENCE
+           'L': length of segment (ASs)
+           'V': [ list of ASs ] }
+    3 : NEXT_HOP
+        { 'V': nexthop IP address (long) }
+    4 : MULTI_EXIT_DISCRIMINATOR
+        { 'V': MED value (long)}
+    5 : LOC_PREF
+        { 'V': LOCAL PREFERENCE value (long) }
+    6 : ATOMIC_AGGR
+        { 'V': None }
+    7 : AGGREGATOR
+        { 'V': tuple (AS, IP address) of router that performed
+               aggregation }
+    8 : COMMUNITY
+        { 'V': [ list of COMMUNITY values ] }
+    9 : ORIGINATOR_ID
+        { 'V': IP address of router originating advertisement }
+    10: CLUSTER_LIST
+        { 'V': [ list of IP addresses in cluster ] }
+    11: DPA
+        { 'V': None } -- never used
+    12: ADVERTISER
+        { 'V': None } -- never used
+    13: RCID_PATH/CLUSTER_ID
+        { 'V': None } -- never used
+    14: MP_REACH_NLRI
+        { 'V': None } -- never used
+    15: MP_UNREACH_NLRI
+        { 'V': None } -- never used
+    16: EXT_COMMUNITIES
+        { 'V': None } -- never used    
+
+    --------------------------------------------------------------------
+
+3.3 NOTIFICATION 
+
+    Value is always left 'None'.
+
+    --------------------------------------------------------------------
+
+3.4 KEEPALIVE
+
+    Value is always left 'None'.    
+
+    --------------------------------------------------------------------
+
+3.5 ROUTE_REFRESH
+
+    Value is always left 'None'.    
+
+   =====================================================================
+
+4. isis.py
+   -------    
+
+   The value field is a dictionary with some common fields and some
+   PDU dependent fields.  The common fields are:
+
+    This is a dictionary with a common part and a PDU dependent part.
+    The common part is formatted as follows:
+
+    'SRC_MAC'     : source MAC address
+    'DST_MAC'     : destination MAC address
+    'LENGTH'      : length of PDU
+    'DSAP'        : DSAP                -- 0xfe
+    'SSAP'        : SSAP                -- 0xfe
+    'CTRL'        : control byte        -- 0x03
+    'NLPID'       : NLP ID              -- 0x83
+    'HDR_LEN'     : ISIS header length
+    'VER_PROTO_ID': protocol version ID -- 0x01
+    'VER'         : version             -- 0x01
+    'ECO'         : ECO                 -- 0x00
+    'USER_ECO'    : user ECO            -- 0x00
+    'VFIELDS'     : { dictionary of variable length fields, keyed on type }
+
+   The PDU dependent parts are formatted as described in the following
+   sections.  The 'variable length fields' field is described last, in
+   section 4.6.
+
+    --------------------------------------------------------------------
+
+4.1 L1LANHello/L2LANHello
+
+    'CIRCUIT_TYPE': L1 or L2 circuit
+    'SRC_ID'      : source ID (CLNP)
+    'HOLDTIMER'   : holdtimer value
+    'PDU_LEN'     : length of SDU
+    'PRIO'        : DS election priority
+    'LAN_ID'      : LAN ID (CLNP)
+
+    --------------------------------------------------------------------
+
+4.2 PPHello
+
+    PPHello PDUs are not currently parsed.
+
+    --------------------------------------------------------------------
+
+4.3 L1LSP/L2LSP
+
+    'PDU_LEN' : length of SDU
+    'LIFETIME': remaining lifetime of this LSP (secs)
+    'LSP_ID'  : ID of this LSP
+    'SEQ_NO'  : sequence number
+    'CKSM'    : checksum
+    'BITS'    : octet encoding the various bit values:
+                  0              
+                  0   1   2   3   4   5   6   7  
+                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                |is1|is2|hty|def|del|exp|err| p |
+                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                p  : partition repair?
+                err: attached system with error metric
+                exp: attached system with expense metric
+                del: attached system with delay metric
+                def: attached system with default metric
+                hty: hippity bit
+
+                is1,is2: 00: unused
+                         01: level 1 link type
+                         10: unused
+                         11: level 1+2 link type 
+
+    --------------------------------------------------------------------
+
+4.4 L1CSN/L2CSN
+
+    'PDU_LEN'     : length of SDU
+    'SRC_ID'      : source ID (CLNP)
+    'START_LSP_ID': first LSP ID covered by this CSN
+    'END_LSP_ID'  : last LSP ID covered by this CSN
+
+    --------------------------------------------------------------------
+
+4.5 L1PSN/L2PSN
+
+    'PDU_LEN': length of SDU
+    'SRC_ID' : source ID (CLNP)
+
+    --------------------------------------------------------------------
+
+4.6 Variable length fields
+
+    This field is a dictionary containing keyed on field type.  Each
+    value is itself a dictionary formatted as:
+
+    'L': length of field
+    'V': value of field
+
+    Permitted field types and values are:
+    
+4.6.1 [1] AreaAddress
+
+      A list of the area addresses in which the speaker exists.
+
+4.6.2 [2] LSPIISNeighbor
+
+      A list of the IS neighbours of the speaker (typically only
+      one).  Each neighbour is represented as a dictionary formatted
+      as follows:
+
+      'DEFAULT': default metric
+      'DELAY'  : delay metric
+      'EXPENSE': expense metric
+      'ERROR'  : error metric
+      'NID'    : neighbour ID
+
+4.6.3 [3] ESNeighbor
+
+      A dictionary representing the ES neighbours of the speaker.
+      one).  The dictionary is formatted as follows:
+
+      'DEFAULT': default metric
+      'DELAY'  : delay metric
+      'EXPENSE': expense metric
+      'ERROR'  : error metric
+      'NIDS'   : [ list of neighbour IDs ]
+
+4.6.4 [4] PartDIS
+
+      Not currently parsed -- left 'None'.
+
+4.6.5 [5] PrefixNeighbor
+
+      Not currently parsed -- left 'None'.
+
+4.6.6 [6] IIHIISNeigbor
+
+      A list of IS neighbours (6 octet source IDs).
+
+4.6.8 [8] Padding
+      
+      Always left 'None'.
+
+4.6.9 [9] LSPEntries
+
+      A list of LSP entries.  Each LSP entry is a dictionary formatted
+      as follows:
+
+      'ID'      : source ID of LSP            -- concatenate 
+      'PN'      : pseudo-node originating LSP -- these to form 
+      'NM'      : number of LSP               -- the LSP ID
+      'LIFETIME': remaining lifetime of LSP (secs)
+      'SEQ_NO'  : sequence number of LSP
+      'CKSM'    : checksum of LSP
+
+4.6.10 [10] Authentication
+
+      Not currently parsed -- left 'None'.
+
+4.6.11 [12] OptionalChecksum
+
+      Not currently parsed -- left 'None'.
+
+4.6.12 [14] LSPBufferSize
+
+      Not currently parsed -- left 'None'.
+
+4.6.13 [22] TEIISNeighbor
+
+      Not currently parsed -- left 'None'.
+
+4.6.14 [128] IPIntReach
+
+      A list of reachable IP interfaces.  Each interface is
+      represented as a dictionary formatted as follows:
+
+      'DEFAULT': default metric
+      'DELAY'  : delay metric
+      'EXPENSE': expense metric
+      'ERROR'  : error metric
+      'ADDR'   : IP address of interface (long)
+      'MASK'   : mask for IP address (long)
+      
+4.6.15 [129] ProtoSupported
+
+      A list of strings representing the protocols routeable by the
+      router.  Valid values are:
+
+      'IP', 'CLNP'
+
+4.6.16 [130] IPExtReach
+
+4.6.17 [131] IPInterDomInfo
+
+      Not currently parsed -- left 'None'.
+
+4.6.18 [132] IPIfAddr
+
+       A list of IP addresses for the interfaces of the router.
+
+4.6.19 [133] IPAuthInfo_ILLEGAL
+
+      Not currently parsed -- left 'None'.
+
+4.6.20 [134] TERouterID
+
+      Not currently parsed -- left 'None'.
+
+4.6.21 [135] TEIPReach
+
+      Not currently parsed -- left 'None'.
+
+4.6.22 [137] DynamicHostname
+
+       A string representing the dynamic hostname of the router
+       (typically part or all of the FQDN).
+      
+4.6.23 [180] LeafNode
+
+      Not currently parsed -- left 'None'.
+
+4.6.24 [222] MultipleTopologyISN
+
+      Not currently parsed -- left 'None'.
+
+4.6.25 [229] MultipleTopologies
+
+      Not currently parsed -- left 'None'.
+
+4.6.26 [232] IPv6IfAddr
+
+      Not currently parsed -- left 'None'.
+
+4.6.27 [235] MTIPReach
+
+      Not currently parsed -- left 'None'.
+
+4.6.28 [236] IPv6IPReach
+
+      Not currently parsed -- left 'None'.
+
+4.6.29 [240] ThreeWayHello
+
+      Not currently parsed -- left 'None'.
+
+4.6.30 [254] IPSumReach
+
+      Not currently parsed -- left 'None'.
+
+========================================================================
+
+$Id: README.rv,v 1.6 2001/12/13 19:10:21 mort Exp $
+
+========================================================================

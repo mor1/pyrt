@@ -1,0 +1,320 @@
+   =====================================================================
+
+                    PyRT: Python Routeing Toolkit
+
+     Documents the MRTD formats used by PyRT (and other MRT utilities)
+                                   
+   Copyright (C) 2001 Richard Mortier <mort@sprintlabs.com>, Sprint ATL
+
+   =====================================================================
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+   USA
+
+   =====================================================================
+
+1. Purpose
+   -------
+
+   This document describes the MRTD format used to dump routeing
+   updates.  The format used by PyRT `embraces and extends' that of
+   previous MRTD releases.  All fields are network-endian.
+
+   =====================================================================
+
+2. MRTD
+   ----
+
+   Packets are dumped in their entirety, with an MRTD header
+   prefixed.  This header consists of a common part, plus a
+   type-dependent part.  The common part is described here, the
+   type-dependent part in the following sections.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            TIME (s)                           |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |             MRT TYPE          |            MRT SUBTYPE        |    
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                       MESSAGE LENGTH (octets)                 |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | < type specific header -- see below >
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+   
+
+   =====================================================================
+
+3. BGP
+   ---
+
+   There are two BGP related types: BGP4 and BGP4MP.  The former is
+   the original MRTD BGP type, which is extended by PyRT to allow
+   packets other than UPDATEs to be dumped.  The latter is used by
+   Zebra and allows not just packets, but also events such as FSM
+   state changes to be logged.  PyRT parses and generates both
+   (although when generating them, there isn't much need for the extra
+   functionality of the BGP4MP type).
+
+     -------------------------------------------------------------------
+
+3.1. BGP-4
+
+     Type code 5 ("PROTOCOL_BGP").  Valid subtype codes are:
+
+      0: NULL
+      1: UPDATE           -- raw update
+      2: PREF_UPDATE      -- (T,L,V) prefs. followed by raw update
+      3: STATE_CHANGE     -- state change
+      4: SYNC             -- ???
+                 
+      129: OPEN           -- extension
+      131: NOTIFICATION   -- extension
+      132: KEEPALIVE      -- extension
+      133: ROUTE_REFRESH  -- extension
+
+     All subtypes used/parsed by PyRT use the following MRTD
+     type-specific header:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       SOURCE AS NUMBER        |       SOURCE IP ADDRESS        ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  ...    SOURCE IP ADDRESS (cont.)   |     DESTINATION AS NUMBER     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                     DESTINATION IP ADDRESS                    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | < contents of BGP message >
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+
+     -------------------------------------------------------------------
+
+3.2. BGP-4MP (Zebra)
+
+     Type code 16 ("PROTOCOL_BGP4MP").  Valid subtype codes are:
+
+      0: STATE_CHANGE
+      1: MESSAGE
+      2: ENTRY 
+      3: SNAPSHOT
+
+    Subtype 0 ("STATE_CHANGE") uses the following type-specific
+    header:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       SOURCE AS NUMBER        |    DESTINATION AS NUMBER      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       INTERFACE NUMBER        |   ADDRESS FAMILY IDENTIFIER   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                        SOURCE IP ADDRESS                      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                      DESTINATION IP ADDRESS                   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         INITIAL STATE         |       DESTINATION STATE       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+     Valid STATE codes are:
+
+      1: IDLE
+      2: CONNECT
+      3: ACTIVE
+      4: OPENSENT
+      5: OPENCONFIRM
+      6: ESTABLISHED
+
+     Subtype 1 ("MESSAGE") uses the following type-specific header:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       SOURCE AS NUMBER        |    DESTINATION AS NUMBER      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       INTERFACE NUMBER        |   ADDRESS FAMILY IDENTIFIER   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                        SOURCE IP ADDRESS                      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                      DESTINATION IP ADDRESS                   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | < contents of BGP message >
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+
+     Subtype 2 ("ENTRY") is not currently parsed, but examination of
+     the Zebra code reveals the following structure:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            UPTIME                             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |               AFI             |     SAFI      | IPV4_MAX_BLEN |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            NEXTHOP                            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | PLEN (octets) |            PREFIX (variable 1-4 octets)      ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ...              |   PATH ATTRIBUTES (variable)                 ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+     The PATH ATTRIBUTES in the above are stored as in a BGP message:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      FLAGS    |      TYPE     |             LENGTH            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | < attribute >
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+
+     -------------------------------------------------------------------
+
+3.3. BGP-4PY (PyRT)
+
+     Type code 17 ("PROTOCOL_BGP4PY").  As PROTOCOL_BGP4MP but with an
+     additional subsecond timestamp field.  Valid subtype codes are:
+
+      0: STATE_CHANGE
+      1: MESSAGE
+      2: ENTRY 
+      3: SNAPSHOT
+
+     All subtypes used/parsed by PyRT use the following type-specific
+     header, EXCEPT subtype 0 ("STATE_CHANGE").
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                         TIMESTAMP (us)                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       SOURCE AS NUMBER        |    DESTINATION AS NUMBER      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       INTERFACE NUMBER        |   ADDRESS FAMILY IDENTIFIER   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                        SOURCE IP ADDRESS                      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                      DESTINATION IP ADDRESS                   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | < contents of BGP message >
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+
+    Subtype 0 ("STATE_CHANGE") uses the following type-specific
+    header:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                         TIMESTAMP (us)                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       SOURCE AS NUMBER        |    DESTINATION AS NUMBER      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       INTERFACE NUMBER        |   ADDRESS FAMILY IDENTIFIER   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                        SOURCE IP ADDRESS                      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                      DESTINATION IP ADDRESS                   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         INITIAL STATE         |       DESTINATION STATE       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+     Valid STATE codes are:
+
+      1: IDLE
+      2: CONNECT
+      3: ACTIVE
+      4: OPENSENT
+      5: OPENCONFIRM
+      6: ESTABLISHED
+
+     -------------------------------------------------------------------
+
+3.4. TABLE_DUMP
+
+     This is a dump of the current BGP RIB (NB.  I don't know if this
+     is RIB-In or RIB-Out or FIB).  The format is undocumented, but
+     from the Zebra code the following appears to be correct.
+
+     Type code is 12 ("MSG_TABLE_DUMP"), and subtype is the AFI.
+     Currently only subtype 1 ("AFI_IP") is supported.  The type
+     specific header is 4 bytes as follows:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         VIEW NUMBER           |        SEQUENCE NUMBER        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     
+     The VIEW NUMBER is the BGP view from the router, and is always 0
+     in the current Zebra implementation.  The SEQUENCE NUMBER starts
+     from 0 and is the sequence number of this TABLE_DUMP 'packet' in
+     the dump of the table.  Each TABLE_DUMP 'packet' then consists of
+     a number of TABLE_DUMP_ENTRY values, formatted as follows:
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |               PREFIX THAT THIS ENTRY CONCERNS                 |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | PREFIX LENGTH | STATUS (0x01) |            UPTIME            ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ...        UPTIME (cont.)        |       PEER IP ADDRESS        ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    ...  PEER IP ADDRESS (cont.)     |          PEER AS NUMBER       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     PATH ATTRIBUTES LENGTH    |  PATH ATTRIBUTES (variable)  ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
+
+   =====================================================================
+
+4. ISIS
+   ----
+
+   ISIS was not originally supported by MRTD.  PyRT supports it
+   through the introduction of two MRTD types.  The subtype is always
+   0 ("NULL") at the present time, although this may be extended to be
+   the ISIS message type.
+
+     -------------------------------------------------------------------
+
+4.1. ISIS
+
+     MRTd type code 32 ("PROTOCOL_ISIS").  No type specific header;
+     the ISIS PDU directly follows the MRTD common header.
+   
+     -------------------------------------------------------------------
+
+4.2. ISIS + extended timestamp
+
+     MRTd type code 33 ("PROTOCOL_ISIS2").  The type-specific header
+     consists of just the extended timestamp information, viz.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                         TIMESTAMP (us)                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+     MOTE: the timestamp (us) field can be written off-by-one in the
+     final digit; this is due to the way that math.modf() and the
+     conversion of the frac. part into a long works.
+
+========================================================================
+
+$Id: README.mrtd,v 1.5 2001/12/13 19:10:21 mort Exp $
+
+========================================================================
