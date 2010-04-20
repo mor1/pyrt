@@ -1,3 +1,18 @@
+2002-05-05  Richard Mortier  <mort@microsoft.com>
+
+	* (bgp.py) extended length attributes actually didn't work; now
+	  they do (tickled by parsing recent RouteViews data where
+	  MP_REACH_NLRI and MP_UNREACH_NLRI fields are to be found)
+
+	* (bgp.py) also fixed situations when NLRI field was prematurely
+	  truncated (I believe this relates to a Zebra bug in
+	  bgpd/bgp_dump.c where the allocated buffer doesn't allow space
+	  for the type specific header in addition to max. packet size and
+	  common header; gets tickled by UPDATES which are close to max
+	  packet size) 
+
+	* new release: 2.5
+
 2002-02-25  Richard Mortier  <mort@sprintlabs.com>
 
 	* finished table-dump.py, few bug fixes
