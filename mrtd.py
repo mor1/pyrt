@@ -23,7 +23,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: mrtd.py,v 1.20 2002/01/17 00:14:13 mort Exp $
+# $Id: mrtd.py,v 1.22 2002/01/26 23:55:15 mort Exp $
 #
 
 import os, time, struct, getopt, sys, bgp, isis, math
@@ -532,7 +532,7 @@ class Mrtd:
             msg_len, msg_type =\
                      struct.unpack(">HB",
                                    pdata[bgp.BGP_MARKER_LEN:bgp.BGP_HDR_LEN])
-            rv["B"] = bgp.parseBgpPdu(msg_type, msg_len, pdata, verbose, level)
+            rv["V"] = bgp.parseBgpPdu(msg_type, msg_len, pdata, verbose, level)
 
         else:
             print level*INDENT + "[ *** SUBTYPE: %d NOT PARSED *** ]" % psubtype
@@ -748,7 +748,7 @@ if __name__ == "__main__":
                 
         #-----------------------------------------------------------------------
 
-        mrt = Mrtd(file_name, "r+b", file_size)
+        mrt = Mrtd(file_name, "rb", file_size)
         while 1:
             rv = mrt.parse(mrt.read(), VERBOSE)
 

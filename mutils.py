@@ -21,7 +21,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: mutils.py,v 1.8 2001/12/06 22:24:22 mort Exp $
+# $Id: mutils.py,v 1.9 2002/01/26 23:55:15 mort Exp $
 #
 
 import string, struct, sys
@@ -31,6 +31,7 @@ import string, struct, sys
 def error(message):
 
     sys.stderr.write(message)
+    sys.stderr.flush()
 
 ################################################################################
 
@@ -42,7 +43,30 @@ def mask2plen(mask):
         mask = mask >> 1
 
     return rv
+
+#-------------------------------------------------------------------------------
     
+def plen2mask(plen):
+
+    return pow(2L, 32) - pow(2L, 32-plen)
+
+#-------------------------------------------------------------------------------
+
+def pfx2id(pfx, plen=None):
+
+    if plen == None:
+        plen = pfx[1]
+        pfx  = pfx[0]
+        
+    mask = plen2mask(plen)
+    p    = 0
+    for i in range(len(pfx)):
+        p = p << 8
+        p = p | ord(pfx[i])
+    p = p & mask
+
+    return p
+        
 #-------------------------------------------------------------------------------
 
 def addrmask2str(addr, mask):
@@ -70,6 +94,17 @@ def pfx2str(pfx, plen=None):
 
 #-------------------------------------------------------------------------------
 
+def id2pfx(id):
+
+    a = int( ((id & 0xff000000) >> 24) & 0xff)
+    b = int( ((id & 0x00ff0000) >> 16) & 0xff)
+    c = int( ((id & 0x0000ff00) >>  8) & 0xff)
+    d = int( ((id & 0x000000ff))       & 0xff)
+
+    return struct.pack('4B', a, b, c, d)
+
+#-------------------------------------------------------------------------------
+
 def id2str(id):
 
     return "%d.%d.%d.%d" %\
@@ -86,9 +121,9 @@ def str2id(str):
     ret   = (string.atol(quads[0]) << 24) + (string.atol(quads[1]) << 16) + \
             (string.atol(quads[2]) <<  8) + (string.atol(quads[3]) <<  0)
     return ret
-    
-#-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+    
 def str2pfx(strng):
 
     pfx, plen = string.split(strng, '/')
@@ -100,7 +135,6 @@ def str2pfx(strng):
         p = struct.pack('%dsB' % len(p), p, string.atoi(e))
     pfx = p
 
-    print `pfx`, `plen`
     return (pfx, plen)
 
 #-------------------------------------------------------------------------------
@@ -124,6 +158,8 @@ def str2hex(str):
 
     return ret
 
+#-------------------------------------------------------------------------------
+
 def prthex(pfx, str):
 
     if str == None or str == "":
@@ -133,6 +169,8 @@ def prthex(pfx, str):
     for i in range(0, len(str), 16):
         ret = ret + '\n' + pfx + '0x' + str2hex(str[i:i+16])
     return ret
+
+#-------------------------------------------------------------------------------
 
 def str2mac(str):
 
@@ -164,6 +202,8 @@ def str2bin(str):
             
     return ret
 
+#-------------------------------------------------------------------------------
+
 def prtbin(pfx, str):
 
     if str == None or str == "":
@@ -178,8 +218,12 @@ def prtbin(pfx, str):
 
 def int2bin(int):
 
+    # XXX this breaks for negative numbers since >> is arithmetic (?)
+    # -- ie. -1 >> 1 == -1...
+    
     ret = ""
     while int != 0:
+        print `int`, `int%2`
         if sys.version[0] == '1':
             ret = `int%2`[:-1] + ret
         else:

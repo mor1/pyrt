@@ -22,7 +22,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: parse.py,v 1.7 2001/12/12 21:59:47 mort Exp $
+# $Id: parse.py,v 1.8 2002/01/26 23:55:15 mort Exp $
 #
 
 # Dummy script to demonstrate basics of parsing MRTd dump files.
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     for fn in filenames:
         cnt = 0
         try:
-            mrt = mrtd.Mrtd(fn, "r+b", mrtd.DEFAULT_SIZE)
+            mrt = mrtd.Mrtd(fn, "rb", mrtd.DEFAULT_SIZE)
             error('[ %s ] parsing...' % fn)
             while 1:
                 msg = mrt.read()

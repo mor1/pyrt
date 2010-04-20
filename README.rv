@@ -81,7 +81,33 @@
 
 2.3 TABLE_DUMP
 
-    XXX WRITE ME
+    The subtype is the MRTD TABLE_DUMP subtype value (identical to the
+    AFI types).
+
+    The header for type:TABLE_DUMP is a dictionary formatted as:
+
+    'TIME' : time
+    'VIEW' : the view of the table that was dumped
+    'SEQNO': the sequence number of this entry in the table dump
+
+    The length field is the length of the packet in octets.
+
+    The value field is a list of dictionaries, one per entry in this
+    TABLE_DUMP packet (each packet contains one or more entries).
+    These are formatted as follows:
+
+    'PREFIX' : the prefix to which this entry refers
+    'STATUS' : the status of this entry (always 0x01 it seems)
+    'UPTIME' : when this entry was last updated
+    'PEER_IP': the IP address of the peer from which this entry was
+               learned
+    'PEER_AS': the AS of the peer from which this entry was learned
+
+    ...plus an entry keyed off the path attribute type code for each
+    path attribute of the entry
+    (eg. rv['V'][bgp.PATH_ATTRIBUTES['ORIGIN']] would be the value of
+    the ORIGIN path attribute were one to be described in this entry).
+    These path attribute values are described in section 3.2.
 
    =====================================================================
 
@@ -233,8 +259,8 @@
    The value field is a dictionary with some common fields and some
    PDU dependent fields.  The common fields are:
 
-    This is a dictionary with a common part and a PDU dependent part.
-    The common part is formatted as follows:
+   This is a dictionary with a common part and a PDU dependent part.
+   The common part is formatted as follows:
 
     'SRC_MAC'     : source MAC address
     'DST_MAC'     : destination MAC address
@@ -478,6 +504,6 @@
 
 ========================================================================
 
-$Id: README.rv,v 1.6 2001/12/13 19:10:21 mort Exp $
+$Id: README.rv,v 1.7 2002/01/23 23:17:17 mort Exp $
 
 ========================================================================

@@ -22,7 +22,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: clean.py,v 1.1 2002/01/17 00:14:13 mort Exp $
+# $Id: clean.py,v 1.2 2002/01/26 23:55:15 mort Exp $
 #
 
 import os, time, struct, getopt, sys, bgp, isis, mrtd, pprint
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         cnt = 0
         try:
             of  = open(fn + '.clean', 'w+b')
-            mrt = mrtd.Mrtd(fn, "r+b", mrtd.DEFAULT_SIZE)
+            mrt = mrtd.Mrtd(fn, "rb", mrtd.DEFAULT_SIZE)
             error('[ %s ] cleaning...' % fn)
             while 1:
                 cnt = cnt + 1

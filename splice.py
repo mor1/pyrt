@@ -24,7 +24,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: splice.py,v 1.6 2001/12/08 03:31:55 mort Exp $
+# $Id: splice.py,v 1.7 2002/01/26 23:55:15 mort Exp $
 #
 
 import time, getopt, sys, mrtd, string, os
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         mrtds = {}
 
         for f in filenames:            
-            mrtds[f] = mrtd.Mrtd(f, "r+b")
+            mrtds[f] = mrtd.Mrtd(f, "rb")
             try:
                 while 1:
                     msg = mrtds[f].read()
