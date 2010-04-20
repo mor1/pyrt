@@ -1,4 +1,14 @@
+2002-02-25  Richard Mortier  <mort@sprintlabs.com>
+
+	* finished table-dump.py, few bug fixes
+
+        * failure detection scripts + matlab; weight change scripts
+
+        * new release: 2.4
+
 2002-02-05  Richard Mortier  <mort@sprintlabs.com>
+
+        * new release: 2.3
 
 	* (table-dump.py) added table-dump.py enabling creation of RIB
 	  dumps from (single) UPDATE streams

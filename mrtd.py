@@ -23,7 +23,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: mrtd.py,v 1.23 2002/02/06 16:58:46 mort Exp $
+# $Id: mrtd.py,v 1.24 2002/02/26 01:57:03 mort Exp $
 #
 
 import os, time, struct, getopt, sys, bgp, isis, math, pprint
@@ -206,8 +206,6 @@ class Mrtd:
     
     def __init__(self, file_pfx=DEFAULT_FILE, file_mode="w+b",
                  file_size=None, mrt_type=None, msg_src=None):
-
-        self._start_time = time.time()
 
         self._mrt_type  = mrt_type
         self._msg_src   = msg_src # message source object, typed by mrt_type

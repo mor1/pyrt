@@ -154,8 +154,8 @@
      | < contents of BGP message >
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
 
-     Subtype 2 ("ENTRY") is not currently parsed, but examination of
-     the Zebra code reveals the following structure:
+     Subtype 2 ("ENTRY") is now parsed, after examination of the Zebra
+     code revealed the following structure:
 
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -316,6 +316,6 @@
 
 ========================================================================
 
-$Id: README.mrtd,v 1.6 2002/02/06 16:58:45 mort Exp $
+$Id: README.mrtd,v 1.7 2002/02/26 01:57:03 mort Exp $
 
 ========================================================================

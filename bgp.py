@@ -22,7 +22,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: bgp.py,v 1.20 2002/02/06 16:58:45 mort Exp $
+# $Id: bgp.py,v 1.21 2002/02/26 01:57:03 mort Exp $
 #
 
 import struct, socket, sys, math, getopt, string, os.path, time

@@ -103,26 +103,6 @@ if __name__ == "__main__":
                     if VERBOSE > 1:
                         pprint.pprint(rv)
 
-                    if ((rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP"] and
-                         rv["ST"] == mrtd.BGP_SUBTYPES["UPDATE"])
-                        or
-                        (rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP4MP"] and
-                         rv["ST"] == mrtd.BGP4MP_SUBTYPES["MESSAGE"] and
-                         rv["V"]["T"] == bgp.MSG_TYPES["UPDATE"])
-                        or
-                        (rv["T"] == mrtd.MSG_TYPES["PROTOCOL_BGP4PY"] and
-                         rv["ST"] == mrtd.BGP4MP_SUBTYPES["MESSAGE"] and
-                         rv["V"]["T"] == bgp.MSG_TYPES["UPDATE"])
-                        ):
-                        for pfx in rv["V"]["V"]["UNFEASIBLE"]:
-                            if pfx == ('\240Q\3514', 30):
-                                print 'WITHDRAW:',
-                                pprint.pprint(rv)
-                        for pfx in rv["V"]["V"]["FEASIBLE"]:
-                            if pfx == ('\240Q\3514', 30):
-                                print 'ANNOUNCE:',
-                                pprint.pprint(rv)
-
         except (mrtd.EOFExc):
             error("end of file: %u messages\n" % cnt)
         except (KeyboardInterrupt):

@@ -21,7 +21,7 @@
 ##     02111-1307 USA
 
 #
-# $Id: mutils.py,v 1.10 2002/02/06 16:58:46 mort Exp $
+# $Id: mutils.py,v 1.11 2002/02/26 01:57:03 mort Exp $
 #
 
 import string, struct, sys
@@ -85,12 +85,14 @@ def pfx2str(pfx, plen=None):
         plen = int(pfx[1])
         pfx  = pfx[0]
 
+    mask = plen2mask(plen)
     p = 0
     for i in range(len(pfx)):
         p = p << 8
         p = p | ord(pfx[i])
     p = p << (8 * (4-len(pfx)))
-              
+    p = p & mask
+    
     return "%s/%d" % (id2str(p), plen)
 
 #-------------------------------------------------------------------------------
