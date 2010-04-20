@@ -85,7 +85,7 @@
 # fact quite a lot nicer once adjacency is established.  ISIS is a much nicer
 # protocol than BGP which sucks high vacuum.
 
-import sys, getopt, socket, string, os.path, struct, time, select, fcntl, math
+import sys, getopt, socket, string, os.path, struct, time, select, math
 from mutils import *
 
 #-------------------------------------------------------------------------------
@@ -754,12 +754,12 @@ class Isis:
 
             self._rtx_at = 0
 
-            (src_mac, None, None, None, None, None) = parseMacHdr(rx_ish)
+            (src_mac, _, _, _, _, _) = parseMacHdr(rx_ish)
             self._nbr_mac_addr = src_mac
 
             hdr_start = MAC_HDR_LEN + ISIS_HDR_LEN
             hdr_end   = hdr_start + ISIS_HELLO_HDR_LEN
-            (None, src_id, ht, None, prio, lan_id) =\
+            (_, src_id, ht, _, prio, lan_id) =\
                    struct.unpack(">B 6s H H B 7s", rx_ish[hdr_start:hdr_end])
 
             self._holdtimer  = ht
@@ -1013,13 +1013,13 @@ class Isis:
  
     def processFsm(self, msg, verbose=1, level=0):
 
-        (src_mac, None, None, None, None, None) = parseMacHdr(msg)
-        (None, None, None, None,
-         msg_type, None, None, None) = parseIsisHdr(msg[MAC_HDR_LEN:])
+        (src_mac, _, _, _, _, _) = parseMacHdr(msg)
+        (_, _, _, _,
+         msg_type, _, _, _) = parseIsisHdr(msg[MAC_HDR_LEN:])
 
         hdr_start = MAC_HDR_LEN + ISIS_HDR_LEN
         hdr_end   = hdr_start + ISIS_HELLO_HDR_LEN
-        (None, src_id, None, None, None, lan_id) =\
+        (_, src_id, _, _, _, lan_id) =\
                struct.unpack("> B 6s H H B 7s", msg[hdr_start:hdr_end])
 
         smac = str2hex(src_mac)
@@ -1182,7 +1182,7 @@ if __name__ == "__main__":
         while 1: # main loop
 
             before  = time.time()
-            rfds, None, None = select.select([isis._sock], [], [], timeout)
+            rfds, _, _ = select.select([isis._sock], [], [], timeout)
             after   = time.time()
             elapsed = after - before
 

@@ -1,4 +1,4 @@
-2002-05-05  Richard Mortier  <mort@microsoft.com>
+2002-05-05  Richard Mortier  <mort@ieee.org>
 
 	* (bgp.py) extended length attributes actually didn't work; now
 	  they do (tickled by parsing recent RouteViews data where
