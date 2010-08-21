@@ -22,21 +22,40 @@
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
 
-#
-# $Id: mrtd.py,v 1.24 2002/02/26 01:57:03 mort Exp $
-#
+import os, time, struct, getopt, sys, math, pprint, traceback
 
-import os, time, struct, getopt, sys, bgp, isis, math, pprint
+try:
+    import bgp
+except ImportError, ie:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ie
+
+try:
+    import isis
+except ImportError, ie:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ie
+
+try:
+    import ospf
+except ImportError, ie:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ie
+
 from mutils import *
 
 #-------------------------------------------------------------------------------
 
-DEFAULT_FILE = "/tmp/mrtd.mrtd"
+DEFAULT_FILE = "mrtd.mrtd"
 DEFAULT_SIZE = 50*1024*1024
 MIN_FILE_SZ  = 50*1024
 
 BUF_SZ       = 8192*8
 INDENT       = "    "
+VERSION      = "3.0"
 
 COMMON_HDR_LEN         = 12
 
@@ -48,6 +67,8 @@ BGP4PY_SUBTYPE_HDR_LEN = 20
 
 ISIS_SUBTYPE_HDR_LEN   = 0
 ISIS2_SUBTYPE_HDR_LEN  = 4
+
+OSPF2_SUBTYPE_HDR_LEN  = 4
 
 ################################################################################
 
@@ -76,48 +97,69 @@ MSG_TYPES = { 0L:  "NULL",
               17L: "PROTOCOL_BGP4PY",      # PyRT BGP4 (ext. time stamp)
               32L: "PROTOCOL_ISIS",        # ISIS
               33L: "PROTOCOL_ISIS2",       # ISIS + ext. time stamp
+
+              64L: "PROTOCOL_OSPF2",       # OSPF v2
               }
 DLIST = DLIST + [MSG_TYPES]
 
-TABLE_DUMP_SUBTYPES = bgp.AFI_TYPES
-DLIST = DLIST + [TABLE_DUMP_SUBTYPES]
+try:
+    TABLE_DUMP_SUBTYPES = bgp.AFI_TYPES
+    DLIST = DLIST + [TABLE_DUMP_SUBTYPES]
 
-BGP_SUBTYPES = { 0L: "NULL",
-                 1L: "UPDATE",       # raw update
-                 2L: "PREF_UPDATE",  # (T,L,V) prefs. followed by raw update
-                 3L: "STATE_CHANGE", # state change
-                 4L: "SYNC",
+    BGP_SUBTYPES = { 0L: "NULL",
+                     1L: "UPDATE",       # raw update
+                     2L: "PREF_UPDATE",  # (T,L,V) prefs. followed by raw update
+                     3L: "STATE_CHANGE", # state change
+                     4L: "SYNC",
 
-                 # XXX RMM XXX apparently bogo-extensions for some of RIS data?
-                 # See, eg., updates.20000814.1631
+                     # XXX RMM XXX apparently bogo-extensions for some of RIS data?
+                     # See, eg., updates.20000814.1631
 
-                 5L: "BOGO_RIS_EXTN_1",
-                 7L: "BOGO_RIS_EXTN_2",                
-                 
-                 # XXX RMM XXX extensions for other raw messages
-                 129L: "OPEN",
-                 131L: "NOTIFICATION",
-                 132L: "KEEPALIVE",
-                 133L: "ROUTE_REFRESH",
-                 }
-DLIST = DLIST + [BGP_SUBTYPES]
+                     5L: "BOGO_RIS_EXTN_1",
+                     7L: "BOGO_RIS_EXTN_2",                
 
-BGP4MP_SUBTYPES = { 0L: "STATE_CHANGE",
-                    1L: "MESSAGE",
-                    2L: "ENTRY",
-                    3L: "SNAPSHOT"
-                    }
-DLIST = DLIST + [BGP4MP_SUBTYPES]
+                     # XXX RMM XXX extensions for other raw messages
+                     129L: "OPEN",
+                     131L: "NOTIFICATION",
+                     132L: "KEEPALIVE",
+                     133L: "ROUTE_REFRESH",
+                     }
+    DLIST = DLIST + [BGP_SUBTYPES]
 
-BGP4PY_SUBTYPES = { 0L: "STATE_CHANGE",
-                    1L: "MESSAGE",
-                    2L: "ENTRY",
-                    3L: "SNAPSHOT"
-                    }
-DLIST = DLIST + [BGP4PY_SUBTYPES]
+    BGP4MP_SUBTYPES = { 0L: "STATE_CHANGE",
+                        1L: "MESSAGE",
+                        2L: "ENTRY",
+                        3L: "SNAPSHOT"
+                        }
+    DLIST = DLIST + [BGP4MP_SUBTYPES]
 
-ISIS_SUBTYPES = isis.MSG_TYPES
-DLIST = DLIST + [ISIS_SUBTYPES]
+    BGP4PY_SUBTYPES = { 0L: "STATE_CHANGE",
+                        1L: "MESSAGE",
+                        2L: "ENTRY",
+                        3L: "SNAPSHOT"
+                        }
+    DLIST = DLIST + [BGP4PY_SUBTYPES]
+except NameError, ne:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ne
+
+try:
+    ISIS_SUBTYPES = isis.MSG_TYPES
+    DLIST = DLIST + [ISIS_SUBTYPES]
+except NameError, ne:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ne
+
+try:
+    OSPF_SUBTYPES = ospf.MSG_TYPES
+    DLIST += [OSPF_SUBTYPES]
+
+except NameError, ne:
+    stk = traceback.extract_stack(limit=1)
+    tb = stk[0]
+    print "### File:", tb[0], "Line:", tb[1], ":", ne
 
 #
 # GNU Zebra dump specific values
@@ -223,6 +265,29 @@ class Mrtd:
         self._of        = open(self._file_name, file_mode)
         self._read      = ""
 
+    def __repr__(self):
+
+        if self._msg_src: 
+            rs = """MRTD module:
+            type: %s
+            src:  %s
+            pfx:  %s
+            file: %s
+            size: %s""" %\
+            (MSG_TYPES[self._mrt_type],
+             self._msg_src._sock, self._file_pfx, self._file_name, self._file_size)
+        else:
+            rs = """MRTD module:
+            type: %s
+            src:  %s
+            pfx:  %s
+            file: %s
+            size: %s""" %\
+            (MSG_TYPES[self._mrt_type],
+             self._msg_src, self._file_pfx, self._file_name, self._file_size)
+                
+        return rs
+
     #---------------------------------------------------------------------------
 
     def close(self):
@@ -294,6 +359,9 @@ class Mrtd:
                 elif ptype == MSG_TYPES["PROTOCOL_ISIS2"]:
                     print ISIS_SUBTYPES[psubtype]
 
+                elif ptype == MSG_TYPES["PROTOCOL_OSPF2"]:
+                    print OSPF_SUBTYPES[psubtype]
+
                 elif ptype == MSG_TYPES["TABLE_DUMP"]:
                     print TABLE_DUMP_SUBTYPES[psubtype]
 
@@ -317,6 +385,9 @@ class Mrtd:
             
         elif ptype == MSG_TYPES["PROTOCOL_ISIS2"]:
             rv = self.parseIsis2Msg(plen, pdata, verbose, level+1)
+
+        elif ptype == MSG_TYPES["PROTOCOL_OSPF2"]:
+            rv = self.parseOspfMsg(plen, pdata, verbose, level+1)
             
         elif ptype == MSG_TYPES["TABLE_DUMP"]:
             rv = self.parseTableDump(psubtype, plen, pdata, verbose, level+1)
@@ -643,6 +714,33 @@ class Mrtd:
     
     #---------------------------------------------------------------------------
 
+    def writeOspfMsg(self, ptype, plen, pkt):
+
+        (ts, hdr) = self.mkHdr(ptype, plen+OSPF2_SUBTYPE_HDR_LEN)
+        (ts_frac, ts_int) = math.modf(ts)
+        msg = struct.pack(">%ds L %ds" %(
+            COMMON_HDR_LEN, len(pkt)), hdr, ts_frac*1000000, pkt)
+        self.write(msg)
+
+    def parseOspfMsg(self, plen, pdata, verbose=1, level=0):
+
+        rv = { "T": MSG_TYPES["PROTOCOL_OSPF2"],
+               "ST": 0L,
+               "L": plen,
+               "H": { "TIME": 0L, },
+               "V": {}
+            }
+
+        (ts_frac, ) = struct.unpack(">L", pdata[:OSPF2_SUBTYPE_HDR_LEN])
+        rv["H"]["TIME"] = ts_frac * 0.000001
+        ospfh = ospf.parseOspfHdr(pdata[OSPF2_SUBTYPE_HDR_LEN+ospf.IP_HDR_LEN:
+                                        OSPF2_SUBTYPE_HDR_LEN+ospf.IP_HDR_LEN+ospf.OSPF_HDR_LEN], 0, 0)
+        rv["ST"] = ospfh["TYPE"]
+        rv["V"].update(ospf.parseOspfMsg(pdata[OSPF2_SUBTYPE_HDR_LEN:], verbose, level))
+        return rv
+    
+    #---------------------------------------------------------------------------
+
     def parseTableDump(self, psubtype, plen, pdata, verbose=1, level=0):
 
         rv = { "T":  MSG_TYPES["TABLE_DUMP"],
@@ -704,8 +802,8 @@ if __name__ == "__main__":
     try:
         try:
             opts, args = getopt.getopt(sys.argv[1:],
-                                       "hqvf:z:",
-                                       ("help", "quiet", "verbose",
+                                       "hqvVf:z:",
+                                       ("help", "quiet", "verbose", "VERBOSE",
                                         "file=", "size=" ))
         except (getopt.error):
             usage()
@@ -719,6 +817,9 @@ if __name__ == "__main__":
 
             elif x in ('-v', '--verbose'):
                 VERBOSE = 2
+
+            elif x in ('-V', '--VERBOSE'):
+                VERBOSE = 3
 
             elif x in ('-f', '--file'):
                 file_name = y
@@ -734,6 +835,7 @@ if __name__ == "__main__":
         mrt = Mrtd(file_name, "rb", file_size)
         while 1:
             rv = mrt.parse(mrt.read(), VERBOSE)
+            if VERBOSE > 2: pprint.pprint(rv)
 
     except (EOFExc):
         print "End of file"

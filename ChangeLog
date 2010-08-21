@@ -1,3 +1,14 @@
+2004-06-16  Richard Mortier  <mort@cantab.net>
+
+	* (ospf.py) now have OSPF listener too; incomplete (hence v2.9)
+	  until I can test against a router, but parsing code seems to be
+	  done.  
+	
+	* (mrtd.py, mutils.py) bug fixes (int2bin() partic.), also more
+	  robust to existence/non-existence of modules and features
+	
+	* new release: 2.9
+
 2002-05-05  Richard Mortier  <mort@ieee.org>
 
 	* (bgp.py) extended length attributes actually didn't work; now
@@ -39,27 +50,10 @@
 
    =====================================================================
 
-                    PyRT: Python Routeing Toolkit
+			 PyRT: Python Routeing Toolkit
 
-                              ChangeLog
+				   ChangeLog
                                    
-   Copyright (C) 2001 Richard Mortier <mort@sprintlabs.com>, Sprint ATL
-
-   =====================================================================
-
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-   USA
+	      Copyright (C) 2001 Sprint ATL.  All Rights Reserved.
 
    =====================================================================

@@ -2,7 +2,7 @@
 
 ##     PyRT: Python Routeing Toolkit
 
-##     Demonstrates how to use MRTd module to parse dumps.
+##     Cleans a trace: removes any "dirty" messages
 
 ##     Copyright (C) 2001 Richard Mortier <mort@sprintlabs.com>, Sprint ATL
 
@@ -20,10 +20,6 @@
 ##     along with this program; if not, write to the Free Software
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
-
-#
-# $Id: clean.py,v 1.2 2002/01/26 23:55:15 mort Exp $
-#
 
 import os, time, struct, getopt, sys, bgp, isis, mrtd, pprint
 from mutils import *

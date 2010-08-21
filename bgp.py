@@ -21,17 +21,13 @@
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
 
-#
-# $Id: bgp.py,v 1.21 2002/02/26 01:57:03 mort Exp $
-#
-
 import struct, socket, sys, math, getopt, string, os.path, time
 from mutils import *
 
 #-------------------------------------------------------------------------------
 
 INDENT          = "    "
-VERSION         = "1.0"
+VERSION         = "3.0"
 
 RCV_BUF_SZ      = 8192
 BGP_LISTEN_PORT = 179
@@ -96,6 +92,8 @@ DLIST = DLIST + [OPT_PARAMS]
 CAP_CODES = { 0L: "UNDEF",
               1L: "MULTIPROTOCOL_EXT",
               2L: "ROUTE_REFRESH",
+
+              64L: "GRACEFUL_RESTART",
               
               # 128+ are reserved for vendor-specific applications
               128L: "ROUTE_REFRESH_Z",
@@ -275,13 +273,34 @@ def parseBgpOpts(opts, verbose=1, level=0):
 
                 if verbose > 1:
                     print prtbin(level*INDENT, opts[2:2+cap_len])
+
                 if cap_code == CAP_CODES["MULTIPROTOCOL_EXT"]:
                     afi, safi = struct.unpack(">HH", opts[2:2+cap_len])
-                    if verbose > 1:
+                    if verbose > 0:
                         print level*INDENT +\
                               "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi]
 
                     trv["V"]["V"] = { "AFI": afi, "SAFI": safi }
+
+                elif cap_code == CAP_CODES["GRACEFUL_RESTART"]:
+                    rinfo, afi, safi, af_flags = struct.unpack(">HHBB",
+                                                          opts[2:2+cap_len])
+                    flg_preserve_fwd_st = (af_flags & (1<<7)) >> 7
+                    if verbose > 0:
+                        print level*INDENT +\
+                              "restart flags:", (rinfo >> 12), \
+                              "restart time:", (rinfo & 0xFFF), \
+                              "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi]
+                        print level*INDENT +\
+                              "address family flags: [ %s ]" % \
+                              ("forwarding state preserved"*flg_preserve_fwd_st)
+
+                    trv["V"]["V"] = { "AFI": afi, "SAFI": safi,
+                                      "RESTART_FLAGS": rinfo >> 12,
+                                      "RESTART_TIME":  rinfo & 0xfff,
+                                      "PRESERVED": flg_preserve_fwd_st,
+                                      }
+                                      
 
                 elif cap_code == CAP_CODES["ROUTE_REFRESH"]:
                     pass
@@ -376,8 +395,17 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
         flg_partial    = (aflags & (1<<5)) >> 5
         flg_extlen     = (aflags & (1<<4)) >> 4
 
-        (alen, ) = struct.unpack("%dB" % (flg_extlen+1),
-                                 msg[curp:curp+flg_extlen+1])
+        # XXX this is a bit grim, but it seems that there's no way to
+        # do this more nicely :-(
+
+        if flg_extlen+1 == 1:
+            (alen, ) = struct.unpack("B", msg[curp:curp+flg_extlen+1])
+        elif flg_extlen+1 == 2:
+            (alen, ) = struct.unpack(">H", msg[curp:curp+flg_extlen+1])
+        else:
+            error('flg_extlen was neither 0 nor 1 :-(')
+            sys.exit(1)
+
         curp  = curp + flg_extlen+1
         adata = msg[curp:curp+alen]
 
@@ -406,7 +434,7 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
     endp = curp + len(msg[curp:])
     rn   = 0
 
-    while curp != endp:
+    while curp < endp:
 
         rn = rn + 1
 
@@ -414,13 +442,18 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
         plen_octets = int(math.ceil(plen/8.0))
         curp = curp + 1
 
-        (pfx,) = struct.unpack("%ds" % plen_octets, msg[curp:curp+plen_octets])
-
         if verbose > 1:
             nlri_pfxs = nlri_pfxs + prtbin((level+2)*INDENT,
                                            msg[curp-1:curp+plen_octets]) + "\n"
+
+        (pfx,) = struct.unpack("%ds" % len(msg[curp:curp+plen_octets]),
+                               msg[curp:curp+plen_octets])
+
         nlri_pfxs = nlri_pfxs +\
-                    (level+2)*INDENT + "%d: %s\n" % (rn, pfx2str(pfx, plen))
+                    (level+2)*INDENT + "%d: %s %s\n" %\
+                    (rn, pfx2str(pfx, plen),
+                     (len(msg[curp:curp+plen_octets]) != plen_octets)*
+                     '[ *** bogus NLRI field: plen_octets did not match *** ]')
 
         rv["V"]["FEASIBLE"].append((pfx,plen))
         curp = curp + plen_octets

@@ -79,7 +79,14 @@
 
     --------------------------------------------------------------------
 
-2.3 TABLE_DUMP
+2.3 OSPF
+
+    The header for type:OSPF2 includes the sub-second part of the
+    timestamp.  The subtype is the OSPF message type.
+
+    --------------------------------------------------------------------
+
+2.4 TABLE_DUMP
 
     The subtype is the MRTD TABLE_DUMP subtype value (identical to the
     AFI types).
@@ -501,6 +508,13 @@
 4.6.30 [254] IPSumReach
 
       Not currently parsed -- left 'None'.
+
+   =====================================================================
+
+5. ospf.py
+   -------    
+
+   XXX write me XXX
 
 ========================================================================
 

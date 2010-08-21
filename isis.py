@@ -21,10 +21,6 @@
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
 
-#
-# $Id: isis.py,v 1.16 2002/01/17 00:14:13 mort Exp $
-#
-
 # refs: http://www.rware.demon.co.uk/isis.htm, RFC1195, RFC1142,
 
 # This is a good deal grimmer than the BGP module since ISIS, by default on
@@ -90,7 +86,7 @@ from mutils import *
 
 #-------------------------------------------------------------------------------
 
-VERSION = "1.0"
+VERSION = "3.0"
 INDENT  = "    "
 
 RETX_THRESH = 1
@@ -754,7 +750,7 @@ class Isis:
 
             self._rtx_at = 0
 
-            (src_mac, _, _, _, _, _) = parseMacHdr(rx_ish)
+            (src_mac, _, _, _, _) = parseMacHdr(rx_ish)
             self._nbr_mac_addr = src_mac
 
             hdr_start = MAC_HDR_LEN + ISIS_HDR_LEN
@@ -1013,9 +1009,8 @@ class Isis:
  
     def processFsm(self, msg, verbose=1, level=0):
 
-        (src_mac, _, _, _, _, _) = parseMacHdr(msg)
-        (_, _, _, _,
-         msg_type, _, _, _) = parseIsisHdr(msg[MAC_HDR_LEN:])
+        (src_mac, _, _, _, _) = parseMacHdr(msg)
+        (_, _, _, _, msg_type, _, _, _) = parseIsisHdr(msg[MAC_HDR_LEN:])
 
         hdr_start = MAC_HDR_LEN + ISIS_HDR_LEN
         hdr_end   = hdr_start + ISIS_HELLO_HDR_LEN

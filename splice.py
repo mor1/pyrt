@@ -23,11 +23,7 @@
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
 
-#
-# $Id: splice.py,v 1.8 2002/02/06 16:58:46 mort Exp $
-#
-
-import time, getopt, sys, mrtd, string, os
+import time, getopt, sys, mrtd, string, os, glob
 from mutils import *
 
 ################################################################################
@@ -71,15 +67,15 @@ if __name__ == "__main__":
     def usage():
 
         print """Usage: %s [ options ] <filenames>:
-        -h|--help         : Help
-        -q|--quiet        : Be quiet
-        -v|--verbose      : Be verbose
-        -V|--very-verbose : Be very verbose
+        -h|--help       : Help
+        -q|--quiet      : Be quiet
+        -v|--verbose    : Be verbose
+        -V|--VERBOSE    : Be very verbose
 
-        -f|--file         : Filename prefix for output
-        -z|--file-size    : Size of output file(s) [min: %d]
-        -s|--start-time   : Start time of packets of interest [inclusive]
-        -t|--end-time     : End time of packets of interest [inclusive]""" %\
+        -f|--file       : Filename prefix for output
+        -z|--file-size  : Size of output file(s) [min: %d]
+        -s|--start-time : Start time of packets of interest [inclusive]
+        -t|--end-time   : End time of packets of interest [inclusive]""" %\
             (os.path.basename(sys.argv[0]), mrtd.MIN_FILE_SZ)
         sys.exit(0)
     
@@ -93,7 +89,7 @@ if __name__ == "__main__":
             opts, args =\
                   getopt.getopt(sys.argv[1:],
                                 "hqvVf:t:z:s:t:",
-                                ("help", "quiet", "verbose", "very-verbose",
+                                ("help", "quiet", "verbose", "VERBOSE",
                                  "file=", "size=", "start-time=", "end-time=" ))
         except (getopt.error):
             usage()
@@ -108,7 +104,7 @@ if __name__ == "__main__":
             elif x in ('-v', '--verbose'):
                 VERBOSE = 2
 
-            elif x in ('-V', '--very-verbose'):
+            elif x in ('-V', '--VERBOSE'):
                 VERBOSE = 3
 
             elif x in ('-z', '--size'):
@@ -126,9 +122,14 @@ if __name__ == "__main__":
             else:
                 usage()
 
-        filenames = args
-        if not filenames:
-            usage()
+        filenames = []
+        for f in args: filenames += glob.glob(f)
+        if not filenames: usage()
+        filenames.sort()
+        error('### filenames:\t%s\n' % filenames[0])
+        for f in filenames: error('###\t\t%s\n' % f)
+##          filenames = args
+##          if not filenames: usage()
 
         #-----------------------------------------------------------------------
 

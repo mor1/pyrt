@@ -113,10 +113,10 @@ def rpfx2str(pfxtup):
 
 def id2pfx(id):
 
-    a = int( ((id & 0xff000000) >> 24) & 0xff)
-    b = int( ((id & 0x00ff0000) >> 16) & 0xff)
-    c = int( ((id & 0x0000ff00) >>  8) & 0xff)
-    d = int( ((id & 0x000000ff))       & 0xff)
+    a = int( ((id & 0xff000000L) >> 24) & 0xff)
+    b = int( ((id & 0x00ff0000)  >> 16) & 0xff)
+    c = int( ((id & 0x0000ff00)  >>  8) & 0xff)
+    d = int( ((id & 0x000000ff))        & 0xff)
 
     return struct.pack('4B', a, b, c, d)
 
@@ -125,10 +125,10 @@ def id2pfx(id):
 def id2str(id):
 
     return "%d.%d.%d.%d" %\
-           (int( ((id & 0xff000000) >> 24) & 0xff),
-            int( ((id & 0x00ff0000) >> 16) & 0xff),
-            int( ((id & 0x0000ff00) >>  8) & 0xff),
-            int( (id  & 0x000000ff)        & 0xff) )
+           (int( ((id & 0xff000000L) >> 24) & 0xff),
+            int( ((id & 0x00ff0000)  >> 16) & 0xff),
+            int( ((id & 0x0000ff00)  >>  8) & 0xff),
+            int( (id  & 0x000000ff)         & 0xff) )
 
 #-------------------------------------------------------------------------------
 
@@ -238,17 +238,17 @@ def int2bin(int):
     # XXX this breaks for negative numbers since >> is arithmetic (?)
     # -- ie. -1 >> 1 == -1...
     
-    ret = ""
+    if int == 0: return '00000000'
+    
+    ret = "" ; bit = 0
     while int != 0:
-        print `int`, `int%2`
-        if sys.version[0] == '1':
-            ret = `int%2`[:-1] + ret
-        else:
+        if bit % 8 == 0: ret = '.' + ret
             ret = `int%2` + ret
         int = int >> 1
+        bit += 1
 
-    ret = (8-len(ret)%8)*"0" + ret
-    return ret
+    if bit % 8 != 0: ret = (8 - bit%8)*"0" + ret
+    return ret[:-1]
 
 #-------------------------------------------------------------------------------
 

@@ -314,6 +314,17 @@
      final digit; this is due to the way that math.modf() and the
      conversion of the frac. part into a long works.
 
+   =====================================================================
+
+5. OSPF
+   ----
+
+   As for ISIS, OSPF was not originally supported by MRTD.  Currently
+   only a single MRTd type code 64 ("PROTOCOL_OSPF2") is allocated;
+   subtype is then the OSPF message type.  As for ISIS2, the
+   type-specific header contains just the extended timestamp in us,
+   and is followed by the _IP_ (not raw ethernet) PDU.
+
 ========================================================================
 
 $Id: README.mrtd,v 1.7 2002/02/26 01:57:03 mort Exp $

@@ -21,14 +21,7 @@
 ##     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##     02111-1307 USA
 
-#
-# $Id: parse.py,v 1.9 2002/02/06 16:58:46 mort Exp $
-#
-
-# Dummy script to demonstrate basics of parsing MRTd dump files.
-# Prints all parsed data structures to stdout.
-
-import os, time, struct, getopt, sys, bgp, isis, mrtd, pprint
+import os, time, struct, getopt, sys, mrtd, pprint, ospf
 from mutils import *
 
 ################################################################################
@@ -60,8 +53,8 @@ if __name__ == "__main__":
         
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hqvs:t:",
-                                   ("help", "verbose", "quiet",
+                                   "hqvVs:t:",
+                                   ("help", "verbose", "VERBOSE", "quiet",
                                     "start-time=", "end-time=", ))
     except (getopt.error):
         usage()
@@ -75,6 +68,9 @@ if __name__ == "__main__":
 
         elif x in ('-v', '--verbose'):
             VERBOSE = 2
+
+        elif x in ('-V', '--VERBOSE'):
+            VERBOSE = 3
 
         elif x in ('-s', '--start-time'):
             START_T = time.mktime(time.strptime(y))
@@ -92,23 +88,23 @@ if __name__ == "__main__":
         cnt = 0
         try:
             mrt = mrtd.Mrtd(fn, "rb", mrtd.DEFAULT_SIZE)
-            error('[ %s ] parsing...' % fn)
+            error('[ %s ] parsing...\n' % fn)
             while 1:
                 msg = mrt.read()
                 if (((START_T < 0) or (msg[0] >= START_T)) and
                     ((END_T   < 0) or (msg[0] <= END_T))):
-
-                    rv  = mrt.parse(msg, VERBOSE)
+                    
+                    rv = mrt.parse(msg, VERBOSE)
                     cnt = cnt + 1
-                    if VERBOSE > 1:
-                        pprint.pprint(rv)
+                    if VERBOSE > 2: pprint.pprint(rv)
 
-        except (mrtd.EOFExc):
+        except mrtd.EOFExc:
             error("end of file: %u messages\n" % cnt)
-        except (KeyboardInterrupt):
+        except KeyboardInterrupt:
             error("interrupted!\n")
 
         mrt.close()
+        
     sys.exit(0)
 
 ################################################################################
