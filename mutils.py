@@ -243,7 +243,7 @@ def int2bin(int):
     ret = "" ; bit = 0
     while int != 0:
         if bit % 8 == 0: ret = '.' + ret
-            ret = `int%2` + ret
+        ret = `int%2` + ret
         int = int >> 1
         bit += 1
 

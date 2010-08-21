@@ -206,19 +206,19 @@ def parseOpen(msg_len, msg, verbose=1, level=0):
     if verbose > 1:
         print prtbin(level*INDENT, msg[:msg_len])
 
-    version, as, holdtime, bgp_id = struct.unpack(">BHHL", msg[0:9])
+    version, asn, holdtime, bgp_id = struct.unpack(">BHHL", msg[0:9])
 
     if verbose > 0:
         print level*INDENT +\
               "Open (len=%d):" % (msg_len+BGP_HDR_LEN, )
         print (level+1)*INDENT +\
               "version: %d, src AS: %d, holdtime: %d, BGP id: %s" %\
-              (version, as, holdtime, id2str(bgp_id))
+              (version, asn, holdtime, id2str(bgp_id))
 
     opts = parseBgpOpts(msg[9:msg_len], verbose, level+1)
 
     rv["V"] = {"VER":  version,
-               "AS":   as,
+               "AS":   asn,
                "HT":   holdtime,
                "ID":   bgp_id,
                "OPTS": opts
@@ -240,11 +240,10 @@ def parseBgpOpts(opts, verbose=1, level=0):
 
     opts = opts[1:]
     while len(opts) > 0:
-
         opt_type, opt_len = struct.unpack("BB", opts[0:2])
         trv = { "T": opt_type,
                 "L": opt_len,
-                "V": {}
+                "V": {},
                 }
            
         if verbose > 1:
@@ -503,18 +502,18 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
                        asp_t == AS_PATH_SEG_TYPES["CONFED_SET"]):
                         
                         ret = ret + '(%s){ ' % AS_PATH_SEG_TYPES[asp_t]
-                        for as in path:
-                            ret = ret + "%d, " % as
-                            rv_cpt["V"].append(as)
+                        for asn in path:
+                            ret = ret + "%d, " % asn
+                            rv_cpt["V"].append(asn)
                         ret = ret + '}'
 
                     elif(asp_t == AS_PATH_SEG_TYPES["SEQUENCE"] or
                          asp_t == AS_PATH_SEG_TYPES["CONFED_SEQUENCE"]):
 
                         ret = ret + '(%s)[ ' % AS_PATH_SEG_TYPES[asp_t]
-                        for as in path:
-                            ret = ret + "<- %d " % as
-                            rv_cpt["V"].append(as)
+                        for asn in path:
+                            ret = ret + "<- %d " % asn
+                            rv_cpt["V"].append(asn)
                         ret = ret + ']'
                         
                 rv["V"].append(rv_cpt)
@@ -537,10 +536,10 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
 
         # ATOMIC_AGGREGATOR hit by null check at start...
         elif atype == PATH_ATTRIBUTES["AGGREGATOR"]:
-            (as, ip) = struct.unpack(">H L", adata)
+            (asn, ip) = struct.unpack(">H L", adata)
             ret = level*INDENT +\
-                  "AGGREGATOR: formed by AS %d, router %s" % (as, id2str(ip))
-            rv["V"] = (as, ip)
+                  "AGGREGATOR: formed by AS %d, router %s" % (asn, id2str(ip))
+            rv["V"] = (asn, ip)
 
         elif atype == PATH_ATTRIBUTES["COMMUNITY"]:
 
@@ -732,12 +731,12 @@ class Bgp:
     #---------------------------------------------------------------------------
 
 
-    def __init__(self, loc_name, as, rem_name, port, holdtime):
+    def __init__(self, loc_name, asn, rem_name, port, holdtime):
 
         self._bgp_id_str  = loc_name
         self._bgp_id_addr = socket.gethostbyname(loc_name)
         self._bgp_id      = str2id(self._bgp_id_addr)
-        self._bgp_as      = as
+        self._bgp_as      = asn
 
         self._bgp_peer_str  = rem_name
         self._bgp_peer_addr = socket.gethostbyname(rem_name)
@@ -917,7 +916,7 @@ if __name__ == "__main__":
     mrtd_type = None
     loc_name  = None
     rem_name  = None
-    as        = None
+    asn       = None
     port      = BGP_LISTEN_PORT
     holdtime  = 0
 
@@ -989,7 +988,7 @@ if __name__ == "__main__":
             rem_name = y
             
         elif x in ('-a', '--as'):
-            as = string.atoi(y)
+            asn = string.atoi(y)
             
         elif x in ('-o', '--holdtime'):
             holdtime = string.atoi(y)
@@ -1009,7 +1008,7 @@ if __name__ == "__main__":
         else:
             usage()
     
-    if not (rem_name and as):
+    if not (rem_name and asn):
         usage()
 
     if not loc_name:
@@ -1017,7 +1016,7 @@ if __name__ == "__main__":
 
     #---------------------------------------------------------------------------
 
-    bgp      = Bgp(loc_name, as, rem_name, port, holdtime)
+    bgp      = Bgp(loc_name, asn, rem_name, port, holdtime)
     bgp._mrt = mrtd.Mrtd(file_pfx, "w+b", file_sz, mrtd_type, bgp)
         
     if VERBOSE > 0:

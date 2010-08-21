@@ -292,8 +292,11 @@ class Mrtd:
 
     def close(self):
         # XXX RMM XXX this should possibly be __del__() method?
-        self._of.flush()
-        self._of.close()
+        try:
+            self._of.flush()
+            self._of.close()
+        except IOError:
+            pass
 
     def write(self, msg):
 
@@ -341,7 +344,7 @@ class Mrtd:
             
             print level*INDENT + "[ " + time.ctime(ptime) + " ]"
             print level*INDENT + "MRT packet: len: %d, type: %s, subtype:" %\
-                  (plen, MSG_TYPES[ptype]),
+                  (plen, MSG_TYPES.get(ptype, "UNKNOWN (%d)" % (ptype,))),
 
             try:
                 if   ptype == MSG_TYPES["PROTOCOL_BGP4MP"]:
