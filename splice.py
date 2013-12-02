@@ -39,7 +39,7 @@ class Msg:
     def __repr__(self):
 
         return "%s: %s" % (self._mrt._file_name, `self._time`)
-        
+
     def __cmp__(self, other):
 
         if   self._time <  other._time: return -1
@@ -78,12 +78,12 @@ if __name__ == "__main__":
         -t|--end-time   : End time of packets of interest [inclusive]""" %\
             (os.path.basename(sys.argv[0]), mrtd.MIN_FILE_SZ)
         sys.exit(0)
-    
+
     #---------------------------------------------------------------------------
 
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         try:
             opts, args =\
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         except (getopt.error):
             usage()
 
-        for (x, y) in opts:        
+        for (x, y) in opts:
             if x in ('-h', '--help'):
                 usage()
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
             elif x in ('-t', '--end-time'):
                 END_T = time.mktime(time.strptime(y))
-                
+
             else:
                 usage()
 
@@ -136,26 +136,26 @@ if __name__ == "__main__":
         msgs  = []
         mrtds = {}
 
-        for f in filenames:            
+        for f in filenames:
             mrtds[f] = mrtd.Mrtd(f, "rb")
             try:
                 while 1:
                     msg = mrtds[f].read()
                     if (((START_T < 0) or (msg[0] >= START_T)) and
                         ((END_T   < 0) or (msg[0] <= END_T))):
-                        
+
                         msgs.append( Msg(mrtds[f], msg) )
                         break
-                    
+
             except (mrtd.EOFExc):
                 del mrtds[f]
-                
+
         msgs.sort()
         of = open(file_pfx+
                   time.strftime(extn_fmt, time.gmtime(msgs[0]._time)),
                   "w+b")
 
-        while len(msgs) > 0:            
+        while len(msgs) > 0:
             try:
                 msg = msgs[0]._msg[-2] + msgs[0]._msg[-1]
 
@@ -177,10 +177,10 @@ if __name__ == "__main__":
                 msg = msgs[0]._mrt.read()
                 msgs[0] = Msg(msgs[0]._mrt, msg)
                 msgs.sort()
-                
+
             except (mrtd.EOFExc):
                 del msgs[0]
-                
+
     except (KeyboardInterrupt):
         print "Interrupted"
 

@@ -53,7 +53,7 @@ SAFI_TYPES = { 1L: "UNICAST",
 DLIST = DLIST + [SAFI_TYPES]
 
 MSG_TYPES = { 1L: "OPEN",
-              2L: "UPDATE", 
+              2L: "UPDATE",
               3L: "NOTIFICATION",
               4L: "KEEPALIVE",
               5L: "ROUTE_REFRESH",
@@ -74,10 +74,10 @@ PATH_ATTRIBUTES = { 1L:  "ORIGIN",
                     9L:  "ORIGINATOR_ID",
                     10L: "CLUSTER_LIST",
                     # DPA unused (only ever made draft)
-                    11L: "DPA",                         
+                    11L: "DPA",
                     12L: "ADVERTISER",
                     # RCID_PATH never sent to border routers
-                    13L: "RCID_PATH/CLUSTER_ID", 
+                    13L: "RCID_PATH/CLUSTER_ID",
                     14L: "MP_REACH_NLRI",
                     15L: "MP_UNREACH_NLRI",
                     16L: "EXT_COMMUNITIES",
@@ -94,7 +94,7 @@ CAP_CODES = { 0L: "UNDEF",
               2L: "ROUTE_REFRESH",
 
               64L: "GRACEFUL_RESTART",
-              
+
               # 128+ are reserved for vendor-specific applications
               128L: "ROUTE_REFRESH_Z",
               }
@@ -113,7 +113,7 @@ AS_PATH_SEG_TYPES = { 1L: "SET",
                       }
 DLIST = DLIST + [AS_PATH_SEG_TYPES]
 
-for d in DLIST: 
+for d in DLIST:
     for k in d.keys():
         d[ d[k] ] = k
 
@@ -160,7 +160,7 @@ NOTIFY_STRINGS = [
     [ "Cease",
       [ "maximum number of prefixes reached",
         "administratively shutdown",
-        "peer unconfigured",            
+        "peer unconfigured",
         "administratively reset",
         "connection rejected",
         "other configuration change" ]]
@@ -169,7 +169,7 @@ NOTIFY_STRINGS = [
 ################################################################################
 
 def parseBgpPdu(msg_type, msg_len, msg, verbose=1, level=0):
-    
+
     msg     = msg[BGP_HDR_LEN:]
     msg_len = msg_len - BGP_HDR_LEN
     if   msg_type == MSG_TYPES["OPEN"]:
@@ -177,13 +177,13 @@ def parseBgpPdu(msg_type, msg_len, msg, verbose=1, level=0):
 
     elif msg_type == MSG_TYPES["UPDATE"]:
         rv = parseUpdate(msg_len, msg, verbose, level)
-        
+
     elif msg_type == MSG_TYPES["NOTIFICATION"]:
         rv = parseNotify(msg_len, msg, verbose, level)
-        
+
     elif msg_type == MSG_TYPES["KEEPALIVE"]:
         rv = parseKeepalive(msg_len, msg, verbose, level)
-        
+
     elif msg_type == MSG_TYPES["ROUTE_REFRESH"]:
         rv = parseRouteRefresh(msg_len, msg, verbose, level)
 
@@ -193,7 +193,7 @@ def parseBgpPdu(msg_type, msg_len, msg, verbose=1, level=0):
             print level*INDENT + "[ *** UNKNOWN MESSAGE TYPE *** ]"
 
     return rv
-            
+
 #-------------------------------------------------------------------------------
 
 def parseOpen(msg_len, msg, verbose=1, level=0):
@@ -234,7 +234,7 @@ def parseBgpOpts(opts, verbose=1, level=0):
     opts_len = struct.unpack("B", opts[0])
     if verbose > 1:
         print prtbin(level*INDENT, opts[0])
-        
+
     if verbose > 0:
         print level*INDENT + "optional params. len=%d" % opts_len
 
@@ -245,7 +245,7 @@ def parseBgpOpts(opts, verbose=1, level=0):
                 "L": opt_len,
                 "V": {},
                 }
-           
+
         if verbose > 1:
             print prtbin(level*INDENT, opts[0:2+opt_len])
         if verbose > 0:
@@ -256,9 +256,9 @@ def parseBgpOpts(opts, verbose=1, level=0):
 
         if opt_type == OPT_PARAMS["CAPABILITY"]:
 
-            level = level + 1            
+            level = level + 1
             cap_code, cap_len = struct.unpack("BB", opts[0:2])
-            
+
             trv["V"] = { "T": cap_code,
                          "L": cap_len,
                          "V": {}
@@ -299,14 +299,14 @@ def parseBgpOpts(opts, verbose=1, level=0):
                                       "RESTART_TIME":  rinfo & 0xfff,
                                       "PRESERVED": flg_preserve_fwd_st,
                                       }
-                                      
+
 
                 elif cap_code == CAP_CODES["ROUTE_REFRESH"]:
                     pass
 
                 elif cap_code == CAP_CODES["ROUTE_REFRESH_Z"]:
                     pass
-                    
+
                 else:
                     print level*INDENT +\
                           "[ *** UNKNOWN CAPABILITY CODE: %d *** ]" % cap_code
@@ -330,7 +330,7 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
           "L": msg_len,
           "V": { "UNFEASIBLE": [], "PATH_ATTRS": {}, "FEASIBLE": [] }
           }
-        
+
     curp = 0
 
     # "BGP4: Inter-domain routing in the Internet" John W. Stewart III.
@@ -345,7 +345,7 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
                           prtbin((level+1)*INDENT, msg[0:2+unfeasible_len])
     unfeasible_pfxs = unfeasible_pfxs +\
                       "\n" + (level+1)*INDENT + "UNFEASIBLE ROUTES:\n"
-        
+
     curp = curp + 2
     endp = curp + unfeasible_len
 
@@ -410,12 +410,12 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
 
         (pa_str, pa_trv) = parseBgpAttr(atype, alen, adata, verbose, level+2)
         path_attrs = path_attrs + pa_str
-        
+
         flgs_str = "%s %s %s %s" %\
                    ("optional"*flg_optional, "transitive"*flg_transitive,
                     "partial"*flg_partial,   "extended length"*flg_extlen)
-	flgs_str = string.strip(flgs_str)
-	flgs_str = " [ %s ]\n" % flgs_str
+        flgs_str = string.strip(flgs_str)
+        flgs_str = " [ %s ]\n" % flgs_str
         path_attrs = path_attrs + flgs_str
         pa_trv["FLAGS"] = {"optional":   flg_optional,
                            "transitive": flg_transitive,
@@ -464,7 +464,7 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
                unfeasible_pfxs, path_attrs, nlri_pfxs)
 
     return rv
-            
+
 #-------------------------------------------------------------------------------
 
 def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
@@ -477,7 +477,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
     if len(adata) == 0:
         ret = level*INDENT + PATH_ATTRIBUTES[atype] + ": null"
         return (ret, rv)
-    
+
     if atype in PATH_ATTRIBUTES.keys():
 
         if atype == PATH_ATTRIBUTES["ORIGIN"]:
@@ -487,8 +487,8 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
             rv["V"] = nlri_src
 
         elif atype == PATH_ATTRIBUTES["AS_PATH"]:
-            
-            ret     = level*INDENT + "AS_PATH: " 
+
+            ret     = level*INDENT + "AS_PATH: "
             rv["V"] = []
 
             while adata:
@@ -500,7 +500,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
                     path = struct.unpack(">%dH" % asp_l, asp_v)
                     if(asp_t == AS_PATH_SEG_TYPES["SET"] or
                        asp_t == AS_PATH_SEG_TYPES["CONFED_SET"]):
-                        
+
                         ret = ret + '(%s){ ' % AS_PATH_SEG_TYPES[asp_t]
                         for asn in path:
                             ret = ret + "%d, " % asn
@@ -515,10 +515,10 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
                             ret = ret + "<- %d " % asn
                             rv_cpt["V"].append(asn)
                         ret = ret + ']'
-                        
+
                 rv["V"].append(rv_cpt)
                 adata = adata[2+(asp_l*2):]
-                        
+
         elif atype == PATH_ATTRIBUTES["NEXT_HOP"]:
             (nh, ) = struct.unpack(">L", adata)
             ret    = level*INDENT + "NEXT_HOP: " + id2str(nh)
@@ -528,7 +528,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
             (med, ) = struct.unpack(">L", adata)
             ret     = level*INDENT + "MED: " + `med`
             rv["V"] = med
-            
+
         elif atype == PATH_ATTRIBUTES["LOC_PREF"]:
             (lp, ) = struct.unpack(">L", adata)
             ret    = level*INDENT + "LOC_PREF: " + `lp`
@@ -567,7 +567,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
             # CLUSTER_LIST is "...just a list of ORIGINATOR_IDs...".  So there
             # we go.  I have _no idea_ what the encoding of the originator ids
             # is here -- I assume the standard ">L" for convenience.
-            
+
             ret = level*INDENT + "CLUSTER_LIST"
             rv["V"] = []
             for i in range(alen/4):
@@ -583,7 +583,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
               "[ *** UNKNOWN BGP path attribute: %d *** ]" % atype
 
     return (ret, rv)
-        
+
 #-------------------------------------------------------------------------------
 
 def parseNotify(msg_len, msg, verbose=1, level=0):
@@ -617,7 +617,7 @@ def parseKeepalive(msg_len, msg, verbose=1, level=0):
           "L": msg_len,
           "V": None
           }
-    
+
     if verbose > 1:
         print prtbin(level*INDENT, msg)
 
@@ -634,7 +634,7 @@ def parseRouteRefresh(msg_len, msg, verbose=1, level=0):
           "L": msg_len,
           "V": None
           }
-          
+
     if verbose > 1:
         print prtbin(level*INDENT, msg)
 
@@ -657,13 +657,13 @@ def parseTableEntry(length, entries, verbose=1, level=0):
 
     pfx, plen, status, uptime, peer_addr, peer_as, elen =\
          struct.unpack(hfmt, entries[:hfmt_l])
-    
+
     rv["V"]["PREFIX"]  = (struct.pack(">L", pfx), plen)
     rv["V"]["STATUS"]  = status
     rv["V"]["UPTIME"]  = uptime
     rv["V"]["PEER_IP"] = peer_addr
     rv["V"]["PEER_AS"] = peer_as
-    
+
     if verbose:
         print level*INDENT +\
               "prefix: %s/%d, peer IP: %s, peer AS: %d" %\
@@ -752,9 +752,9 @@ class Bgp:
 
         self._rcvd = ""
         self._mrt  = None
-        
+
     def __repr__(self):
-            
+
         ret = """Passive BGP speaker version %s:
         id: %s [%s] (%#0x), AS: %d
         peer: %s:%d [%s] (%#0x), AS: %d
@@ -776,19 +776,19 @@ class Bgp:
     def recvMsg(self, verbose=1, level=0):
 
         while 1:
-        
+
             if len(self._rcvd) < BGP_MARKER_LEN+3:
                 self._rcvd = self._rcvd + self._sock.recv(RCV_BUF_SZ)
                 continue
 
             ## guaranteed to have a BGP-msg-header-worth of data in buffer
-            
+
             msg_start = string.find(self._rcvd, BGP_MARKER)
             if msg_start < 0:
                 # no marker in buffer -- fill buffer and continue
                 self._rcvd = self._rcvd + self._sock.recv(RCV_BUF_SZ)
                 continue
-            
+
             elif msg_start > 0:
                 # marker not at buffer start -- dump skipped data to debug
                 sys.stderr.write(prtbin("", self._rcvd[:msg_start]) + "\n---\n")
@@ -811,7 +811,7 @@ class Bgp:
 
         ## guaranteed to have the entire message in [msg_start..msg_end]
 
-        msg        = self._rcvd[msg_start:msg_end]                        
+        msg        = self._rcvd[msg_start:msg_end]
         self._rcvd = self._rcvd[msg_end:]
 
         ## have now advanced buffer past current message; current
@@ -821,14 +821,14 @@ class Bgp:
             print "recvMsg: msg: type=%s (%d) len=%d%s" %\
                   (MSG_TYPES[msg_type], msg_type, msg_len,
                    prtbin(level*INDENT, msg))
-            
+
         return msg_type, msg_len, msg
-        
+
     def sendMsg(self, msg_type, msg_len, msg, verbose=1, level=0):
 
         fmt = ">LLLLH B %ds" % msg_len
         pkt = struct.pack(fmt,
-                          0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 
+                          0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
                           msg_len+BGP_HDR_LEN, msg_type, msg)
 
         if DUMP_MRTD == 1:
@@ -867,11 +867,11 @@ class Bgp:
         return rv # msg_type, msg_len, msg
 
     #---------------------------------------------------------------------------
-        
+
     def sendOpen(self, verbose=1, level=0):
 
         print `type(self._bgp_id)`, `self._bgp_id`
-        
+
         fmt = ">BHHLB"
         msg = struct.pack(fmt, Bgp._version,
                           self._bgp_as, self._holdtime, self._bgp_id, 0)
@@ -910,7 +910,7 @@ if __name__ == "__main__":
 
     VERBOSE   = 1
     DUMP_MRTD = 0
-    
+
     file_pfx  = mrtd.DEFAULT_FILE
     file_sz   = mrtd.DEFAULT_SIZE
     mrtd_type = None
@@ -929,7 +929,7 @@ if __name__ == "__main__":
         -q|--quiet    : Be quiet
         -v|--verbose  : Be verbose
         -V|--VERBOSE  : Be very verbose
-        
+
         -f|--file     : Set file prefix for MRTd dump [def: %s]
         -y|--dump-4py : Dump MRTd::PROTOCOL_BGP4PY format [default]
         -d|--dump     : Dump MRTd::PROTOCOL_BGP format
@@ -945,10 +945,10 @@ if __name__ == "__main__":
         sys.exit(0)
 
     #---------------------------------------------------------------------------
-    
+
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hqvVydmp:a:o:t:l:f:z:",
@@ -959,43 +959,43 @@ if __name__ == "__main__":
     except (getopt.error):
         usage()
 
-    for (x, y) in opts:        
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
         elif x in ('-q', '--quiet'):
             VERBOSE = 0
-            
+
         elif x in ('-v', '--verbose'):
             VERBOSE = 2
-            
+
         elif x in ('-V', '--VERBOSE'):
             VERBOSE = 3
 
         elif x in ('-y', '--dump-4py'):
             DUMP_MRTD = 1
             mrtd_type = mrtd.MSG_TYPES["PROTOCOL_BGP4PY"]
-            
+
         elif x in ('-d', '--dump'):
             DUMP_MRTD = 2
             mrtd_type = mrtd.MSG_TYPES["PROTOCOL_BGP"]
-            
+
         elif x in ('-m', '--dump-4mp'):
             DUMP_MRTD = 3
             mrtd_type = mrtd.MSG_TYPES["PROTOCOL_BGP4MP"]
-            
+
         elif x in ('-p', '--peer'):
             rem_name = y
-            
+
         elif x in ('-a', '--as'):
             asn = string.atoi(y)
-            
+
         elif x in ('-o', '--holdtime'):
             holdtime = string.atoi(y)
-            
+
         elif x in ('-t', '--port'):
             port = string.atoi(y)
-            
+
         elif x in ('-l', '--local'):
             loc_name = y
 
@@ -1007,7 +1007,7 @@ if __name__ == "__main__":
 
         else:
             usage()
-    
+
     if not (rem_name and asn):
         usage()
 
@@ -1018,10 +1018,10 @@ if __name__ == "__main__":
 
     bgp      = Bgp(loc_name, asn, rem_name, port, holdtime)
     bgp._mrt = mrtd.Mrtd(file_pfx, "w+b", file_sz, mrtd_type, bgp)
-        
+
     if VERBOSE > 0:
         print `bgp`
-    
+
     try:
 
         # the wafeur-est thin state machine you ever did see :-)
@@ -1036,7 +1036,7 @@ if __name__ == "__main__":
     except (KeyboardInterrupt):
         bgp.close()
         sys.exit(1)
-        
+
     #---------------------------------------------------------------------------
 
 ################################################################################

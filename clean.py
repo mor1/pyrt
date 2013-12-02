@@ -40,20 +40,20 @@ if __name__ == "__main__":
         -q|--quiet     : Be quiet""" %\
             (os.path.basename(sys.argv[0]),)
         sys.exit(0)
-    
+
     #---------------------------------------------------------------------------
 
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hqv",
                                    ("help", "verbose", "quiet", ))
     except (getopt.error):
         usage()
-        
-    for (x, y) in opts:        
+
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     filenames = args
     if not filenames:
         usage()
-        
+
     #---------------------------------------------------------------------------
 
     verbose = VERBOSE-1
@@ -82,13 +82,13 @@ if __name__ == "__main__":
                 cnt = cnt + 1
                 msg_tup = mrt.read()
                 msg = msg_tup[-2] + msg_tup[-1]
-                
+
                 try:
                     rv = mrt.parse(msg_tup, verbose)
 
                 except (KeyboardInterrupt):
                     raise KeyboardInterrupt
-                
+
                 except:
                     rv["T"] = None
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                     if VERBOSE:
                         print prthex("msg %d: " % cnt, msg)
                     error('msg %d dirty...' % cnt)
-                    
+
         except (mrtd.EOFExc):
             error("end of file: %u messages\n" % cnt)
         except (KeyboardInterrupt):

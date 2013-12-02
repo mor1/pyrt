@@ -45,7 +45,7 @@ def mask2plen(mask):
     return rv
 
 #-------------------------------------------------------------------------------
-    
+
 def plen2mask(plen):
 
     return pow(2L, 32) - pow(2L, 32-plen)
@@ -57,7 +57,7 @@ def pfx2id(pfx, plen=None):
     if plen == None:
         plen = pfx[1]
         pfx  = pfx[0]
-        
+
     mask = plen2mask(plen)
     p    = 0
     for i in range(len(pfx)):
@@ -67,7 +67,7 @@ def pfx2id(pfx, plen=None):
     p = p & mask
 
     return p
-        
+
 #-------------------------------------------------------------------------------
 
 def addrmask2str(addr, mask):
@@ -92,7 +92,7 @@ def pfx2str(pfx, plen=None):
         p = p | ord(pfx[i])
     p = p << (8 * (4-len(pfx)))
     p = p & mask
-    
+
     return "%s/%d" % (id2str(p), plen)
 
 #-------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ def rpfx2str(pfxtup):
         p = p << 8
         p = p | ord(pfx[i])
     p = p << (8 * (4-len(pfx)))
-              
+
     return "%s/%d" % (id2str(p), plen)
 
 #-------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ def str2id(str):
     return ret
 
 #-------------------------------------------------------------------------------
-    
+
 def str2pfx(strng):
 
     pfx, plen = string.split(strng, '/')
@@ -161,7 +161,7 @@ def isid2id(str):
     str = string.join(string.split(str2hex(str), '.'), '')
     str = "%s.%s.%s.%s" % (str[0:3], str[3:6], str[6:9], str[9:12])
 
-    return str2id(str)    
+    return str2id(str)
 
 ################################################################################
 
@@ -194,12 +194,12 @@ def str2mac(str):
     bytes = string.split(str, '.')
     if len(bytes) != 6:
         return
-    
+
     bytes = map(lambda x: string.atoi(x, 16), bytes)
     return struct.pack("BBB BBB",
                        bytes[0], bytes[1], bytes[2],
                        bytes[3], bytes[4], bytes[5])
-        
+
 ################################################################################
 
 def str2bin(str):
@@ -216,7 +216,7 @@ def str2bin(str):
             n = n % (2**j)
             s = s + `b`
         ret = ret + ("%s." % s)
-            
+
     return ret
 
 #-------------------------------------------------------------------------------
@@ -237,9 +237,9 @@ def int2bin(int):
 
     # XXX this breaks for negative numbers since >> is arithmetic (?)
     # -- ie. -1 >> 1 == -1...
-    
+
     if int == 0: return '00000000'
-    
+
     ret = "" ; bit = 0
     while int != 0:
         if bit % 8 == 0: ret = '.' + ret
@@ -258,7 +258,7 @@ def int2hex(i):
         return "00"
     else:
         ret = ""
-        
+
     while i != 0:
         ret = "%0.2x." % (i&0xff) + ret
         i = i >> 8

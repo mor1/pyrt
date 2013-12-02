@@ -36,7 +36,7 @@ MINS_TO_SECS = 60
 def processEntry(rv):
 
     def mkStr(attr, aval):
-    
+
         flags = 0
         if aval["FLAGS"]['optional']:
             flags = flags | (1<<7)
@@ -50,7 +50,7 @@ def processEntry(rv):
         rflgs = struct.pack('BB', flags & 0xff, attr & 0xff)
         if   attr == bgp.PATH_ATTRIBUTES["ORIGIN"]:
             rval = struct.pack('B', aval["V"])
-                        
+
         elif attr == bgp.PATH_ATTRIBUTES["AS_PATH"]:
             if aval["V"] != None:
                 for pseg in aval["V"]:
@@ -68,7 +68,7 @@ def processEntry(rv):
 
         elif attr == bgp.PATH_ATTRIBUTES["MULTI_EXIT_DISCRIMINATOR"]:
             rval = struct.pack('>L', aval["V"])
-            
+
         elif attr == bgp.PATH_ATTRIBUTES["LOC_PREF"]:
             rval = struct.pack('>L', aval["V"])
 
@@ -96,7 +96,7 @@ def processEntry(rv):
                   bgp.PATH_ATTRIBUTES[attr], '*** ]'
             return None
 
-        if aval["FLAGS"]['extlen']:            
+        if aval["FLAGS"]['extlen']:
             rlen = struct.pack('>H', len(rval) & 0xffff)
         else:
             rlen = struct.pack('>B', len(rval) & 0xff)
@@ -117,7 +117,7 @@ def processEntry(rv):
         astr = struct.pack('%ds%ds' % (len(astr), len(rstr)),
                            astr, rstr)
 
-        
+
     for pfx in rv["V"]["V"]["FEASIBLE"]:
         TABLE[pfx] = {"TIME"   : msg_tm,
                       "PEER_IP": src_ip,
@@ -145,7 +145,7 @@ def dumpTable():
                                  TABLE[(pfx,plen)]['PEER_IP'],
                                  TABLE[(pfx,plen)]['PEER_AS'],
                                  attr_len, TABLE[(pfx,plen)]['ATTRS'])
-        
+
         mrt_hdr = struct.pack('>LHHL',
                               now,
                               mrtd.MSG_TYPES['TABLE_DUMP'],
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     OUTPUT_F = 'bview'
     TABLE_F = None
     TABLE   = {}
-    
+
     #---------------------------------------------------------------------------
 
     def usage():
@@ -189,12 +189,12 @@ if __name__ == "__main__":
         -t|--table      : Initial table [def.: none]""" %\
             (os.path.basename(sys.argv[0]),)
         sys.exit(0)
-    
+
     #---------------------------------------------------------------------------
 
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         opts, args =\
               getopt.getopt(sys.argv[1:],
@@ -204,7 +204,7 @@ if __name__ == "__main__":
     except (getopt.error):
         usage()
 
-    for (x, y) in opts:        
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     print 'init entries:', `len(TABLE.keys())`
 
     # process UPDATE files
-    
+
     for fn in filenames:
         cnt = 0
         try:
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     # do a final table dump
 
     dumpTable()
-    
+
     sys.exit(0)
 
 ################################################################################

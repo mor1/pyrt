@@ -45,12 +45,12 @@ if __name__ == "__main__":
         -t|--end-time  : End time of packets of interest [inclusive]""" %\
             (os.path.basename(sys.argv[0]),)
         sys.exit(0)
-    
+
     #---------------------------------------------------------------------------
 
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hqvVs:t:",
@@ -58,8 +58,8 @@ if __name__ == "__main__":
                                     "start-time=", "end-time=", ))
     except (getopt.error):
         usage()
-        
-    for (x, y) in opts:        
+
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     filenames = args
     if not filenames:
         usage()
-        
+
     #---------------------------------------------------------------------------
 
     for fn in filenames:
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                 msg = mrt.read()
                 if (((START_T < 0) or (msg[0] >= START_T)) and
                     ((END_T   < 0) or (msg[0] <= END_T))):
-                    
+
                     rv = mrt.parse(msg, VERBOSE)
                     cnt = cnt + 1
                     if VERBOSE > 2: pprint.pprint(rv)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
             error("interrupted!\n")
 
         mrt.close()
-        
+
     sys.exit(0)
 
 ################################################################################

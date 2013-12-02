@@ -41,7 +41,7 @@
 #   ll-ll             :: <2:length> == 0x05dc == 1500 (payload only)
 
 # LLC header (IEEE 802.2):
-#   dsap :: <1:DSAP> == 0xfe ...by RFC1340, p53, "IEEE 802 Numbers of interest" 
+#   dsap :: <1:DSAP> == 0xfe ...by RFC1340, p53, "IEEE 802 Numbers of interest"
 #   ssap :: <1:SSAP> == 0xfe ...("ISO CLNS IS 8473")
 #   ctrl :: <1 or 2: control> == 0x03 ("unnumbered information")
 
@@ -153,16 +153,16 @@ VLEN_FIELDS = { 0L:   "Null",                # null
                 1L:   "AreaAddress",         # area address
                 2L:   "LSPIISNeighbor",      # ISIS (CLNP) neighbour (in LSP)
                 3L:   "ESNeighbor",          # end system (CLNP) neighbour
-                4L:   "PartDIS",             # 
-                5L:   "PrefixNeighbor",      # 
+                4L:   "PartDIS",             #
+                5L:   "PrefixNeighbor",      #
                 6L:   "IIHIISNeighbor",      # ISIS (CLNP) neighbour (in ISH)
                 8L:   "Padding",             # zero padding
                 9L:   "LSPEntries",          # LSPs ack'd in this CSNP/PSNP
-                10L:  "Authentication",      # 
-                12L:  "OptionalChecksum",    # 
-                14L:  "LSPBufferSize",       # 
+                10L:  "Authentication",      #
+                12L:  "OptionalChecksum",    #
+                14L:  "LSPBufferSize",       #
 
-                22L:  "TEIISNeighbor",       # 
+                22L:  "TEIISNeighbor",       #
 
                 128L: "IPIntReach",          # 'internal' reachable IP subnets
                 129L: "ProtoSupported",      # NLPIDs this IS can relay
@@ -174,16 +174,16 @@ VLEN_FIELDS = { 0L:   "Null",                # null
                 135L: "TEIPReach",           # 'wide metric TLV'
                 137L: "DynamicHostname",     # dynamic hostname support
 
-                180L: "LeafNode",            # 
+                180L: "LeafNode",            #
 
-                222L: "MultipleTopologyISN", # 
-                229L: "MultipleTopologies",  # 
-                232L: "IPv6IfAddr",          # 
-                235L: "MTIPReach",           # 
-                236L: "IPv6IPReach",         # 
-                240L: "ThreeWayHello",       # 
-                
-                254L: "IPSumReach",          # 
+                222L: "MultipleTopologyISN", #
+                229L: "MultipleTopologies",  #
+                232L: "IPv6IfAddr",          #
+                235L: "MTIPReach",           #
+                236L: "IPv6IPReach",         #
+                240L: "ThreeWayHello",       #
+
+                254L: "IPSumReach",          #
                 }
 DLIST = DLIST + [VLEN_FIELDS]
 
@@ -194,7 +194,7 @@ STATES = { 0L: "NULL",
            }
 DLIST = DLIST + [STATES]
 
-for d in DLIST: 
+for d in DLIST:
     for k in d.keys():
         d[ d[k] ] = k
 
@@ -211,7 +211,7 @@ def padPkt(tgt_len, pkt):
         pkt = pkt + struct.pack("BB %ds" % (part-2, ),
                            VLEN_FIELDS["Padding"], part-2, (part-2)*'\000')
     return pkt
-        
+
 #-------------------------------------------------------------------------------
 
 def parseMacHdr(pkt):
@@ -249,7 +249,7 @@ def parseCsnHdr(pkt):
     (pdu_len, src_id, start_lsp_id, end_lsp_id) =\
               struct.unpack("> H 7s 8s 8s", pkt[:ISIS_CSN_HDR_LEN])
 
-    return (pdu_len, src_id, start_lsp_id, end_lsp_id)    
+    return (pdu_len, src_id, start_lsp_id, end_lsp_id)
 
 #-------------------------------------------------------------------------------
 
@@ -258,9 +258,9 @@ def parseLspHdr(pkt):
     (pdu_len, lifetime, lsp_id, seq_no, cksm, bits) =\
               struct.unpack("> HH 8s LHB", pkt[:ISIS_LSP_HDR_LEN])
     lsp_id = struct.unpack("> 6sBB", lsp_id)
-    
+
     return (pdu_len, lifetime, lsp_id, seq_no, cksm, bits)
-    
+
 ################################################################################
 
 def parseIsisMsg(msg_len, msg, verbose=1, level=0):
@@ -268,7 +268,7 @@ def parseIsisMsg(msg_len, msg, verbose=1, level=0):
     (src_mac, dst_mac, length, dsap, ssap, ctrl) = parseMacHdr(msg)
     (nlpid, hdr_len, ver_proto_id, resvd, msg_type, ver, eco, user_eco) =\
             parseIsisHdr(msg[MAC_HDR_LEN:MAC_HDR_LEN+ISIS_HDR_LEN])
-    
+
     if verbose > 1:
         print prtbin(level*INDENT, msg[:MAC_HDR_LEN])
 
@@ -286,7 +286,7 @@ def parseIsisMsg(msg_len, msg, verbose=1, level=0):
         print prtbin((level+1)*INDENT,
                      msg[MAC_HDR_LEN:MAC_HDR_LEN+ISIS_HDR_LEN])
 
-    if verbose > 0:        
+    if verbose > 0:
         print (level+1)*INDENT +\
               "hdr_len: %d, protocol id: %d, version: %d, " %\
               (hdr_len, ver_proto_id, ver) +\
@@ -325,7 +325,7 @@ def parseIsisMsg(msg_len, msg, verbose=1, level=0):
 
         elif msg_type == MSG_TYPES["PPHello"]:
             parseIsisPPIsh(msg_len, msg, verbose, level)
-            
+
         elif msg_type in (MSG_TYPES["L1LSP"], MSG_TYPES["L2LSP"]):
             (rv["V"]["PDU_LEN"],
              rv["V"]["LIFETIME"],
@@ -355,7 +355,7 @@ def parseIsisMsg(msg_len, msg, verbose=1, level=0):
         if verbose > 0:
             print level*INDENT + "[ UNKNOWN ISIS message: ", `msg_type`, " ]"
 
-    return rv        
+    return rv
 
 ################################################################################
 
@@ -378,7 +378,7 @@ def parseIsisIsh(msg_len, msg, verbose=1, level=0):
 
     vfields = parseVLenFields(msg[ISIS_HELLO_HDR_LEN:], verbose, level)
     return (circuit_type, src_id, holdtimer, pdu_len, prio, lan_id, vfields)
- 
+
 #-------------------------------------------------------------------------------
 
 def parseIsisPPIsh(msg_len, msg, verbose=1, level=0):
@@ -407,7 +407,7 @@ def parseIsisLsp(msg_len, msg, verbose=1, level=0):
               (bits & (1<<4)) * "delay " + (bits & (1<<3)) * "default"
         hty = (bits & (1<<2)) >> 2
         ist = bits & ((1<<1) | (1<<0))
-        
+
         print (level+1)*INDENT +\
               "partition repair: %s, hippity: %s, type: %s" %\
               (("no", "yes")[p], ("no", "yes")[hty],
@@ -432,7 +432,7 @@ def parseIsisCsn(msg_len, msg, verbose=1, level=0):
         print (level+1)*INDENT +\
               "start LSP ID: %s" % (str2hex(start_lsp_id),)
         print (level+1)*INDENT +\
-              "end LSP ID: %s" % (str2hex(end_lsp_id),)        
+              "end LSP ID: %s" % (str2hex(end_lsp_id),)
 
     vfields = parseVLenFields(msg[ISIS_CSN_HDR_LEN:], verbose, level)
     return (pdu_len, src_id, start_lsp_id, end_lsp_id, vfields)
@@ -466,7 +466,7 @@ def parseVLenFields(fields, verbose=1, level=0):
 
         if not vfields.has_key(ftype):
             vfields[ftype] = []
-            
+
         vfields[ftype].append(
             parseVLenField(ftype, flen, fields[2:2+flen], verbose, level+1)
             )
@@ -486,16 +486,16 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                                      VLEN_FIELDS["Null"]):
         print prtbin(level*INDENT, `ftype`+`flen`+fval)
 
-    if ftype in VLEN_FIELDS.keys():            
+    if ftype in VLEN_FIELDS.keys():
         if verbose > 0 and ftype not in (VLEN_FIELDS["Padding"],
                                          VLEN_FIELDS["Null"]):
             print level*INDENT +\
                   "field: %s, length: %d" % (VLEN_FIELDS[ftype], flen)
-            
+
         level = level + 1
         if   ftype == VLEN_FIELDS["Null"]:
             pass
-        
+
         elif ftype == VLEN_FIELDS["AreaAddress"]:
             ## 1
             rv["V"] = []
@@ -554,7 +554,7 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                 print level*INDENT +\
                       "default: %d, delay: %d, expense: %d, error: %d" %\
                       (default, delay, expense, error)
-                
+
             fval = fval[4:]
             cnt  = 0
             while len(fval) > 0:
@@ -588,7 +588,7 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
         elif ftype == VLEN_FIELDS["Padding"]:
             ## 8
             rv["V"] = None
-            
+
         elif ftype == VLEN_FIELDS["LSPEntries"]:
             ## 9
             rv["V"] = []
@@ -617,7 +617,7 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                           "lifetime: %d, seq.no: %d, cksm: %s" %\
                           (lifetime, lsp_seq_no, int2hex(cksm))
 
-                fval = fval[16:]                
+                fval = fval[16:]
 
         elif ftype == VLEN_FIELDS["IPIntReach"]:
             ## 128
@@ -636,14 +636,14 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                          'MASK'   : mask
                          }
                 rv["V"].append(ipif)
-                
+
                 if verbose > 0:
                     print level*INDENT +\
                           "%d: default: %d, delay: %d, expense: %d, error: %d" %\
                           (cnt, default, delay, expense, error)
                     print (level+1)*INDENT +\
                           "addr/mask: %s/%s" % (id2str(addr), id2str(mask))
-                    
+
                 fval = fval[12:]
 
         elif ftype == VLEN_FIELDS["ProtoSupported"]:
@@ -651,9 +651,9 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
             prots = struct.unpack("> %dB" % flen, fval)
             prots_strs = map(lambda x: '%s' % x,
                              map(lambda x: NLPIDS[x], prots))
-            
+
             rv["V"] = prots_strs
-            
+
             if verbose > 0:
                 print level*INDENT + "protocols supported: " + `prots_strs`
 
@@ -674,20 +674,20 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                          'MASK'   : mask
                          }
                 rv["V"].append(ipif)
-                
+
                 if verbose > 0:
                     print level*INDENT +\
                           "%d: default: %d, delay: %d, expense: %d, error: %d" %\
                           (cnt, default, delay, expense, error)
                     print (level+1)*INDENT +\
                           "addr/mask: %s/%s" % (id2str(addr), id2str(mask))
-                    
+
                 fval = fval[12:]
 
         elif ftype == VLEN_FIELDS["IPInterDomInfo"]:
             ## 131
             rv["V"] = None
-            
+
             if verbose > 0:
                 print level*INDENT + "[ IPInterDomInfo ]"
 
@@ -697,19 +697,19 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
             addrs_strs = map(lambda x: id2str(x), addrs)
 
             rv["V"] = addrs_strs
-            if verbose > 0:                
-                print level*INDENT + "interface IP addresses: " + `addrs_strs` 
+            if verbose > 0:
+                print level*INDENT + "interface IP addresses: " + `addrs_strs`
 
         elif ftype == VLEN_FIELDS["DynamicHostname"]:
             ## 137
             name = struct.unpack("> %ds" % flen, fval)
             rv["V"] = name
-            
+
             if verbose > 0:
                 print level*INDENT + "dynamic hostname: '%s'" % name
 
         else:
-            if verbose > 0:                
+            if verbose > 0:
                 print level*INDENT + "[ *** %s *** ]" % VLEN_FIELDS[ftype]
 
     else:
@@ -718,7 +718,7 @@ def parseVLenField(ftype, flen, fval, verbose=1, level=0):
                   "[ UNKNOWN ISIS variable length field: ", `ftype`, " ]"
 
     return rv
-        
+
 ################################################################################
 
 class LLCExc(Exception): pass
@@ -765,7 +765,7 @@ class Isis:
             self._nbr_areas = []
             fields = rx_ish[MAC_HDR_LEN+ISIS_HDR_LEN+ISIS_HELLO_HDR_LEN:]
             while len(fields) > 0:
-                
+
                 (ftype, flen) = struct.unpack(">BB", fields[0:2])
                 fval          = fields[2:2+flen]
                 if ftype == VLEN_FIELDS["AreaAddress"]:
@@ -785,7 +785,7 @@ class Isis:
              str2hex(self._nbr_src_id), str2hex(self._nbr_lan_id))
 
             return ret
-        
+
     #---------------------------------------------------------------------------
 
     def __init__(self, dev, area_addr, src_id=None, lan_id=None, src_ip=None):
@@ -802,10 +802,10 @@ class Isis:
             self._src_ip = src_ip
         else:
             self._src_ip = str2id(socket.gethostbyname(socket.gethostname()))
-            
+
         self._src_mac   = self._sockname[-1]
         self._area_addr = area_addr
-        
+
         if src_id:
             self._src_id = src_id
         else:
@@ -834,19 +834,19 @@ class Isis:
              str2hex(self._lan_id), `self._adjs`)
 
         return ret
-    
+
     def close(self):
 
         self._sock.close()
         self._mrtd.close()
-    
+
     #---------------------------------------------------------------------------
 
     def recvMsg(self, verbose=1, level=0):
-        
+
         self._rcvd = self._sock.recv(RCV_BUF_SZ)
         (src_mac, dst_mac, length, dsap, ssap, ctrl) = parseMacHdr(self._rcvd)
-        
+
         if verbose > 2:
             print "%srecvMsg: recv: len=%d%s" %\
                   (level*INDENT,
@@ -862,21 +862,21 @@ class Isis:
         return (len(self._rcvd), self._rcvd)
 
     def sendMsg(self, pkt, verbose=1, level=0):
-        
+
         (src_mac, dst_mac, length, dsap, ssap, ctrl) = parseMacHdr(pkt)
         (nlpid, hdr_len, ver_proto_id, resvd,
          msg_type, ver, eco, user_eco) = parseIsisHdr(pkt)
 
         if DUMP_MRTD == 1:
             self._mrtd.writeIsisMsg(msg_type, len(pkt), pkt)
-            
+
         elif DUMP_MRTD == 2:
             self._mrtd.writeIsis2Msg(msg_type, len(pkt), pkt)
-            
+
         if verbose > 2:
             print "%ssendMsg: send: len=%d%s" %\
                   (level*INDENT, len(pkt), prthex((level+1)*INDENT, pkt))
-            
+
         if verbose > 1:
             print "%ssendMsg: src: %s\n         dst: %s" %\
                   (level*INDENT, str2hex(src_mac), str2hex(dst_mac))
@@ -889,12 +889,12 @@ class Isis:
 
         if len(pkt) <= MAC_PKT_LEN:
             self._sock.send(pkt)
-    
+
     def parseMsg(self, verbose=1, level=0):
 
         try:
             (msg_len, msg) = self.recvMsg(verbose, level)
-            
+
         except (LLCExc):
             if verbose > 1:
                 print "[ *** Non ISIS frame received *** ]"
@@ -919,7 +919,7 @@ class Isis:
         return rv
 
     #---------------------------------------------------------------------------
-    
+
     def mkMacHdr(self, dst_mac, src_mac):
 
         hdr = struct.pack(">6s 6s H 3B ", dst_mac, src_mac, ISIS_PKT_LEN,
@@ -935,7 +935,7 @@ class Isis:
 
     def mkIshHdr(self, circuit, src_id, holdtimer, pdu_len, prio, lan_id):
 
-        ret = struct.pack(">B 6s H H B 7s", 
+        ret = struct.pack(">B 6s H H B 7s",
                           circuit, src_id, holdtimer, pdu_len, prio, lan_id)
         return ret
 
@@ -962,7 +962,7 @@ class Isis:
         elif ftype == VLEN_FIELDS["IIHIISNeighbor"]:
             for i in range(flen/6):
                 ret = ret + struct.pack("6s", fval[i])
-                    
+
         else:
             raise VLenFieldExc
 
@@ -993,7 +993,7 @@ class Isis:
         prio = 0 # we don't ever want to be elected Designated System
         ish  = ish + self.mkIshHdr(CIRCUIT_TYPES["L1L2Circuit"], self._src_id,
                              holdtimer, ISIS_PDU_LEN, prio, lan_id)
-        
+
         ish = ish + self.mkVLenField("ProtoSupported", 1, (NLPIDS["IP"],))
         ish = ish + self.mkVLenField("AreaAddress", 1+len(self._area_addr),
                                 ((len(self._area_addr), self._area_addr),))
@@ -1002,11 +1002,11 @@ class Isis:
         if len(isns) > 0:
             ish = ish + self.mkVLenField("IIHIISNeighbor", len(isns)*6, isns)
         ish  = padPkt(MAC_PKT_LEN, ish)
-        
+
         return ish
-    
+
     ############################################################################
- 
+
     def processFsm(self, msg, verbose=1, level=0):
 
         (src_mac, _, _, _, _) = parseMacHdr(msg)
@@ -1042,15 +1042,15 @@ class Isis:
 
         else:
             pass
-            
+
     #---------------------------------------------------------------------------
- 
+
 ################################################################################
 
 if __name__ == "__main__":
 
     import mrtd
-    
+
     #---------------------------------------------------------------------------
 
     global VERBOSE, DUMP_MRTD
@@ -1059,12 +1059,12 @@ if __name__ == "__main__":
     DUMP_MRTD = 0
 
     file_pfx  = mrtd.DEFAULT_FILE
-    file_sz   = mrtd.DEFAULT_SIZE                                 
+    file_sz   = mrtd.DEFAULT_SIZE
     mrtd_type = None
     area_addr = None
     src_id    = None
     lan_id    = None
-    
+
     #---------------------------------------------------------------------------
 
     def usage():
@@ -1073,7 +1073,7 @@ if __name__ == "__main__":
         -h|--help       : Help
         -v|--verbose    : Be verbose
         -q|--quiet      : Be quiet
-        
+
         -a|--area-addr  : set the area address to which this IS belongs
         -i|--ip-addr    : *** HACK *** set the IP address to advertise
         -s|--src-id     : set the source ID of this IS
@@ -1093,27 +1093,27 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         usage()
-        
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hqvVdyf:s:l:a:z:i:",
                                    ("help", "quiet", "verbose", "VERBOSE",
                                     "dump", "dump-isis2",
-                                    "file-pfx=", "file-size=", "device=", 
+                                    "file-pfx=", "file-size=", "device=",
                                     "src-id=", "lan-id=", "area-addr=", "ip-addr=" ))
     except (getopt.error):
         usage()
 
-    for (x, y) in opts:        
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
         elif x in ('-q', '--quiet'):
             VERBOSE = 0
-            
+
         elif x in ('-v', '--verbose'):
             VERBOSE = 2
-            
+
         elif x in ('-V', '--VERBOSE'):
             VERBOSE = 3
 
@@ -1135,7 +1135,7 @@ if __name__ == "__main__":
             src_id = map(lambda x: int(x, 16), string.split(y, '.'))
             src_id = struct.pack("6B",
                                  src_id[0], src_id[1], src_id[2],
-                                 src_id[3], src_id[4], src_id[5]) 
+                                 src_id[3], src_id[4], src_id[5])
 
         elif x in ('-l', '--lan-id'):
             lan_id = map(lambda x: int(x, 16), string.split(y, '.'))
@@ -1158,10 +1158,10 @@ if __name__ == "__main__":
 
         elif x in ('-i', '--ip-addr'):
             src_ip = str2id(y)
-                
+
         else:
             usage()
-            
+
     #---------------------------------------------------------------------------
 
     if not area_addr:
@@ -1171,7 +1171,7 @@ if __name__ == "__main__":
     isis._mrtd = mrtd.Mrtd(file_pfx, "w+b", file_sz, mrtd_type, isis)
     if VERBOSE > 1:
         print `isis`
-    
+
     try:
         timeout = Isis._holdtimer
         while 1: # main loop
@@ -1200,6 +1200,6 @@ if __name__ == "__main__":
     except (KeyboardInterrupt):
         isis.close()
         sys.exit(1)
-        
+
 ################################################################################
 ################################################################################

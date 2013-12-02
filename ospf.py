@@ -155,7 +155,7 @@ LSA_TYPES = { 1L: "ROUTER",             # links between routers in the area
 
               6L: "MOSPF",
               7L: "NSSA",
-              
+
               9L: "OPAQUE LINK LOCAL",
               10L: "OPAQUE AREA LOCAL",
               11L: "OPAQUE AS LOCAL",
@@ -225,10 +225,10 @@ RTR_LINK_TYPE = { 1L: "P2P",
 
 DLIST += [RTR_LINK_TYPE]
 
-for d in DLIST: 
+for d in DLIST:
     for k in d.keys():
         d[ d[k] ] = k
-        
+
 ################################################################################
 
 def parseIpHdr(msg, verbose=1, level=0):
@@ -269,7 +269,7 @@ def parseOspfHdr(msg, verbose=1, level=0):
     if verbose > 0:
         print level*INDENT +\
               "OSPF: ver:%s, type:%s, len:%s, rtr id:%s, area id:%s, cksum:%x, autype:%s" %\
-              (ver, MSG_TYPES[typ], len, id2str(rid), id2str(aid), cksum, AU_TYPES[autype],) 
+              (ver, MSG_TYPES[typ], len, id2str(rid), id2str(aid), cksum, AU_TYPES[autype],)
 
     return { "VER"    : ver,
              "TYPE"   : typ,
@@ -280,7 +280,7 @@ def parseOspfHdr(msg, verbose=1, level=0):
              "AUTYPE" : autype,
              "AUTH1"  : auth1,
              "AUTH2"  : auth2,
-             }    
+             }
 
 def parseOspfOpts(opts, verbose=1, level=0):
 
@@ -297,7 +297,7 @@ def parseOspfOpts(opts, verbose=1, level=0):
     if verbose > 0:
         print level*INDENT + "options: %s %s %s %s %s %s %s" %(
             qbit*"Q", ebit*"E", mcbit*"MC", npbit*"NP", eabit*"EA", dcbit*"DC", obit*"O")
-        
+
     return { "Q"  : qbit,
              "E"  : ebit,
              "MC" : mcbit,
@@ -338,7 +338,7 @@ def parseOspfLsaRtr(lsa, verbose=1, level=0):
     if verbose > 0:
         print level*INDENT + "nlinks:%s, rtr desc: %s %s %s" %(
             nlinks, v*"VIRTUAL", e*"EXTERNAL", b*"BORDER")
-    
+
     lsa = lsa[OSPF_LSARTR_LEN:] ; i = 0 ; links = {}
     while i < nlinks:
         i += 1
@@ -373,7 +373,7 @@ def parseOspfLsaRtr(lsa, verbose=1, level=0):
              "EXTERNAL" : e,
              "BORDER"   : b,
              "NLINKS"   : nlinks,
-             "LINKS"    : links,             
+             "LINKS"    : links,
              }
 
 def parseOspfLsaNet(lsa, verbose=1, level=0):
@@ -381,7 +381,7 @@ def parseOspfLsaNet(lsa, verbose=1, level=0):
     if verbose > 1: print prtbin(level*INDENT, lsa[:OSPF_LSANET_LEN])
     (mask, ) = struct.unpack(OSPF_LSANET, lsa[:OSPF_LSANET_LEN])
     if verbose > 0: print level*INDENT + "mask:%s" % (id2str(mask), )
-    
+
     lsa = lsa[OSPF_LSANET_LEN:] ; cnt = 0 ; rtrs = []
     while len(lsa) > 0:
         cnt += 1
@@ -417,7 +417,7 @@ def parseOspfLsaSummary(lsa, verbose=1, level=0):
         ## discourage other routers from using it to transit traffic,
         ## ie. forward traffic to any networks others than those
         ## connected directly
-        
+
         metric = ((stub<<16) | metric)
         if verbose > 0:
             if metric == LS_STUB_RTR: mstr = "metric:STUB_ROUTER"
@@ -469,12 +469,12 @@ def parseOspfLsaExt(lsa, verbose=1, level=0):
 
     return { "MASK": mask,
              "METRICS": metrics,
-             }        
+             }
 
 def parseOspfLsas(lsas, verbose=1, level=0):
 
     rv = {}
-    
+
     cnt = 0
     while len(lsas) > 0:
         cnt += 1
@@ -486,7 +486,7 @@ def parseOspfLsas(lsas, verbose=1, level=0):
         l = rv[cnt]["H"]["L"]
         rv[cnt]["T"] = t
         rv[cnt]["L"] = l
-        
+
         if t == LSA_TYPES["ROUTER"]:
             rv[cnt]["V"] = parseOspfLsaRtr(lsas[OSPF_LSAHDR_LEN:l], verbose, level+1)
         elif t == LSA_TYPES["NETWORK"]:
@@ -501,11 +501,11 @@ def parseOspfLsas(lsas, verbose=1, level=0):
         else:
             error("[ *** unknown LSA type %d*** ]\n" % (t, ))
             error("%s\n" % prtbin(level*INDENT, msg))
-            
+
         lsas = lsas[l:]
 
     return rv
-    
+
 def parseOspfHello(msg, verbose=1, level=0):
 
     if verbose > 1: print prtbin(level*INDENT, msg)
@@ -526,7 +526,7 @@ def parseOspfHello(msg, verbose=1, level=0):
             print (level+1)*INDENT + "neighbour: %s" % (id2str(nbor),)
         nbors.append(nbor)
         msg = msg[nbor_len:]
-        
+
 
     return { "NETMASK" : netmask,
              "HELLO"   : hello,
@@ -543,7 +543,7 @@ def parseOspfDesc(msg, verbose=1, level=0):
     if verbose > 1: print prtbin(level*INDENT, msg)
     (mtu, opts, imms, ddseqno) = struct.unpack(OSPF_DESC, msg[:OSPF_DESC_LEN])
     init        = (imms & 0x04) >> 2
-    more        = (imms & 0x02) >> 1 
+    more        = (imms & 0x02) >> 1
     masterslave = (imms & 0x01)
     if verbose > 0:
         print level*INDENT +\
@@ -551,7 +551,7 @@ def parseOspfDesc(msg, verbose=1, level=0):
               (mtu, int2bin(opts), init*"INIT", more*" MORE",
                masterslave*" MASTER" + (1-masterslave)*" SLAVE",
                ddseqno)
-        
+
     return { "MTU"         : mtu,
              "OPTS"        : parseOspfOpts(opts, verbose, level),
              "INIT"        : init,
@@ -574,7 +574,7 @@ def parseOspfLsUpd(msg, verbose=1, level=0):
     return { "NLSAS" : nlsas,
              "LSAS"  : parseOspfLsas(msg[OSPF_LSUPD_LEN:], verbose, level+1),
              }
-    
+
 def parseOspfLsAck(msg, verbose=1, level=0):
 
     if verbose > 0: print level*INDENT + "LSACK"
@@ -585,10 +585,10 @@ def parseOspfLsAck(msg, verbose=1, level=0):
         if verbose > 0: print (level+1)*INDENT + "LSA %s" % cnt
         lsas[cnt] = parseOspfLsaHdr(msg[:OSPF_LSAHDR_LEN], verbose, level+1)
         msg = msg[OSPF_LSAHDR_LEN:]
-        
+
     return { "LSAS"  : lsas
              }
-    
+
 def parseOspfMsg(msg, verbose=1, level=0):
 
     iph   = parseIpHdr(msg[:IP_HDR_LEN], verbose, level)
@@ -616,7 +616,7 @@ def parseOspfMsg(msg, verbose=1, level=0):
         rv["V"]["V"] = parseOspfLsAck(msg[OSPF_HDR_LEN:], verbose, level+2)
 
     return rv
-    
+
 ################################################################################
 
 class OspfExc(Exception): pass
@@ -632,7 +632,7 @@ class Ospf:
 
         def __init__(self): pass
         def __repr__(self): pass
-        
+
     #---------------------------------------------------------------------------
 
     def __init__(self):
@@ -642,7 +642,7 @@ class Ospf:
         ## https://sourceforge.net/tracker/?func=detail&atid=355470&aid=889544&group_id=5470,
         ## http://www.rs.fromadia.com/newsread.php?newsid=254,
         ## http://www.rs.fromadia.com/files/pyraw.exe to fix this
-        
+
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
 
         self._addr = (ADDRESS, 0)
@@ -655,7 +655,7 @@ class Ospf:
         self._adjs = {}
         self._rcvd = ""
         self._mrtd = None
-        
+
     def __repr__(self):
 
         rs = """OSPF listener, version %s:
@@ -665,12 +665,12 @@ class Ospf:
             (self._version, self._mrtd, self._sock, self._addr, self._name)
 
         return rs
-            
+
     def close(self):
 
         self._sock.close()
         self._mrtd.close()
-    
+
     #---------------------------------------------------------------------------
 
     def parseMsg(self, verbose=1, level=0):
@@ -699,9 +699,9 @@ class Ospf:
                 tb = stk[0]
                 error("[ *** exception parsing OSPF packet ***]\n")
                 error("### File: %s, Line: %s, Exc: %s " % (tb[0], tb[1], exc ))
-                    
+
             return rv
-            
+
     def recvMsg(self, verbose=1, level=0):
 
         self._rcvd = self._sock.recv(RECV_BUF_SZ)
@@ -713,7 +713,7 @@ class Ospf:
 
         return (len(self._rcvd), self._rcvd)
 
-    
+
     def sendMsg(self, verbose=1, level=0):
 
         pass
@@ -731,7 +731,7 @@ if __name__ == "__main__":
     VERBOSE   = 1
     DUMP_MRTD = 0
     ADDRESS   = None
-    
+
     file_pfx  = mrtd.DEFAULT_FILE
     file_sz   = mrtd.DEFAULT_SIZE
     mrtd_type = None
@@ -756,7 +756,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     #---------------------------------------------------------------------------
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hqvVdf:z:",
@@ -765,16 +765,16 @@ if __name__ == "__main__":
     except (getopt.error):
         usage()
 
-    for (x, y) in opts:        
+    for (x, y) in opts:
         if x in ('-h', '--help'):
             usage()
 
         elif x in ('-q', '--quiet'):
             VERBOSE = 0
-            
+
         elif x in ('-v', '--verbose'):
             VERBOSE = 2
-            
+
         elif x in ('-V', '--VERBOSE'):
             VERBOSE = 3
 
@@ -793,16 +793,16 @@ if __name__ == "__main__":
 
         else:
             usage()
-    
+
     if not ADDRESS: usage()
-    
+
     #---------------------------------------------------------------------------
 
     ospf       = Ospf()
     ospf._mrtd = mrtd.Mrtd(file_pfx, "w+b", file_sz, mrtd.MSG_TYPES["PROTOCOL_OSPF2"], ospf)
-    
+
     if VERBOSE > 0: print ospf
-    
+
     try:
         timeout = Ospf._holdtimer
 

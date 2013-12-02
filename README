@@ -74,8 +74,8 @@
      ** mask2plen/addrmask2str:
             manipulate and print address/mask prefixes (as opposed to
             prefix/length prefixes).
-            
-     ** str2id/id2str/pfx2str/str2pfx: 
+
+     ** str2id/id2str/pfx2str/str2pfx:
             convert between string and long representations of IP
             addresses/prefixes.
 
@@ -85,15 +85,15 @@
             the standard 11.22.33.44.55.66 -> 112.233.445.566
             mapping).
 
-     ** int2xxx: 
+     ** int2xxx:
             given an integer, return a string representation in base
             xxx.
 
-     ** str2xxx: 
+     ** str2xxx:
             given a string (ie. packed binary data a la the 'struct'
             module), return a string representation in base xxx.
 
-     ** prtxxx: 
+     ** prtxxx:
             print the string representation, taking care of wrapping
             and prepending a prefix to each line.
 
@@ -125,17 +125,17 @@
      then dump and/or print it accordingly.  All listeners support 4
      verbosity options:
 
-     ** quiet (-q): 
+     ** quiet (-q):
             output nothing.
 
-     ** default: 
+     ** default:
             output human readable parsing of protocol messages.
 
-     ** verbose (-v): 
+     ** verbose (-v):
             in addition to default, output significant chunks of
             messages in binary/hex.
 
-     ** very verbose (-V): 
+     ** very verbose (-V):
             in addition to above, output results/parameters of
             recvMsg(), parseMsg(), sendMsg() (mostly for debugging
             purposes).
@@ -148,16 +148,16 @@
        provides support for reading and writing MRTD format log files
        in 3 formats:
 
-       ** PROTOCOL_BGP: 
+       ** PROTOCOL_BGP:
               default for the BGP module; slightly extended to allow
               messages other than UPDATEs to be dumped.
 
-       ** PROTOCOL_BGP4MP: 
+       ** PROTOCOL_BGP4MP:
               alternative BGP dump format used by Zebra. Contains
               hacks to work around problems in Zebra dumps (v0.89 and
               0.91a).
 
-       ** PROTOCOL_ISIS: 
+       ** PROTOCOL_ISIS:
               non-standard homegrown format for dumping ISIS messages.
 
        It provides a class to wrap up dealing with reading and writing
@@ -229,7 +229,7 @@
            if message-to-read:
                Isis.parseMsg()
 
-           else: ## we need to transmit one or more packets 
+           else: ## we need to transmit one or more packets
                for-each adjacency:
                    if required:
                        transmit ISIS HELLO
@@ -253,7 +253,7 @@
 
        This module implements the OSPF listener, blah, as for the ISIS
        module :)
-     
+
      -------------------------------------------------------------------
 
 3.2. Utilities
@@ -291,9 +291,9 @@
 4. References
 
    BGP: "BGP4: Inter-domain routing in the Internet" John W. Stewart III
-   
-        RFC 1771 (base) 
-        RFC 1965 (confederations) 
+
+        RFC 1771 (base)
+        RFC 1965 (confederations)
         RFC 1966 (route reflectors)
         RFC 1997 (communities)
         RFC 2283, RFC 2858 (multi-protocol extensions)
@@ -309,7 +309,7 @@
    ISIS: RFC 1142 (OSI ISO ISIS)
          RFC 1195 (IP extensions)
          RFC 2763 (Dynamic hostname TLV)
-         http://www.gated.org/ 
+         http://www.gated.org/
              GateD public release v3.5.11 (the last to support ISIS,
              and then only on NetBSD)
          http://www.rware.demon.co.uk/isis.htm
@@ -322,7 +322,7 @@
    =====================================================================
 
 5. To do
-   
+
    ** need to _completely_ separate the parsing from pretty printing
    ** ext timestamp support is ugly -- should push into common header
    ** bgp: support KEEPALIVEs for robustness

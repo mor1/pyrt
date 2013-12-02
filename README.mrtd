@@ -3,7 +3,7 @@
                     PyRT: Python Routeing Toolkit
 
      Documents the MRTD formats used by PyRT (and other MRT utilities)
-                                   
+
    Copyright (C) 2001 Richard Mortier <mort@sprintlabs.com>, Sprint ATL
 
    =====================================================================
@@ -48,13 +48,13 @@
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |                            TIME (s)                           |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |             MRT TYPE          |            MRT SUBTYPE        |    
+     |             MRT TYPE          |            MRT SUBTYPE        |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |                       MESSAGE LENGTH (octets)                 |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      | < type specific header -- see below >
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ... ... ... ...
-   
+
 
    =====================================================================
 
@@ -80,7 +80,7 @@
       2: PREF_UPDATE      -- (T,L,V) prefs. followed by raw update
       3: STATE_CHANGE     -- state change
       4: SYNC             -- ???
-                 
+
       129: OPEN           -- extension
       131: NOTIFICATION   -- extension
       132: KEEPALIVE      -- extension
@@ -109,7 +109,7 @@
 
       0: STATE_CHANGE
       1: MESSAGE
-      2: ENTRY 
+      2: ENTRY
       3: SNAPSHOT
 
     Subtype 0 ("STATE_CHANGE") uses the following type-specific
@@ -190,7 +190,7 @@
 
       0: STATE_CHANGE
       1: MESSAGE
-      2: ENTRY 
+      2: ENTRY
       3: SNAPSHOT
 
      All subtypes used/parsed by PyRT use the following type-specific
@@ -257,7 +257,7 @@
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |         VIEW NUMBER           |        SEQUENCE NUMBER        |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     
+
      The VIEW NUMBER is the BGP view from the router, and is always 0
      in the current Zebra implementation.  The SEQUENCE NUMBER starts
      from 0 and is the sequence number of this TABLE_DUMP 'packet' in
@@ -296,7 +296,7 @@
 
      MRTd type code 32 ("PROTOCOL_ISIS").  No type specific header;
      the ISIS PDU directly follows the MRTD common header.
-   
+
      -------------------------------------------------------------------
 
 4.2. ISIS + extended timestamp
