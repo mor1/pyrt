@@ -42,79 +42,79 @@ TABLE_DUMP_ENTRY_HDR_LEN = 18
 
 DLIST = []
 
-AFI_TYPES = { 1L: "IP",
-              2L: "IP6",
+AFI_TYPES = { 1: "IP",
+              2: "IP6",
               }
 DLIST = DLIST + [AFI_TYPES]
 
-SAFI_TYPES = { 1L: "UNICAST",
-               2L: "MULTICAST",
+SAFI_TYPES = { 1: "UNICAST",
+               2: "MULTICAST",
                }
 DLIST = DLIST + [SAFI_TYPES]
 
-MSG_TYPES = { 1L: "OPEN",
-              2L: "UPDATE",
-              3L: "NOTIFICATION",
-              4L: "KEEPALIVE",
-              5L: "ROUTE_REFRESH",
-              6L: "TABLE_DUMP_ENTRY",
+MSG_TYPES = { 1: "OPEN",
+              2: "UPDATE",
+              3: "NOTIFICATION",
+              4: "KEEPALIVE",
+              5: "ROUTE_REFRESH",
+              6: "TABLE_DUMP_ENTRY",
               }
 DLIST = DLIST + [MSG_TYPES]
 
 # NB. PAs below actually attribute numbers; only type codes 1-10, 14, 15 valid
 
-PATH_ATTRIBUTES = { 1L:  "ORIGIN",
-                    2L:  "AS_PATH",
-                    3L:  "NEXT_HOP",
-                    4L:  "MULTI_EXIT_DISCRIMINATOR",
-                    5L:  "LOC_PREF",
-                    6L:  "ATOMIC_AGGR",
-                    7L:  "AGGREGATOR",
-                    8L:  "COMMUNITY",
-                    9L:  "ORIGINATOR_ID",
-                    10L: "CLUSTER_LIST",
+PATH_ATTRIBUTES = { 1:  "ORIGIN",
+                    2:  "AS_PATH",
+                    3:  "NEXT_HOP",
+                    4:  "MULTI_EXIT_DISCRIMINATOR",
+                    5:  "LOC_PREF",
+                    6:  "ATOMIC_AGGR",
+                    7:  "AGGREGATOR",
+                    8:  "COMMUNITY",
+                    9:  "ORIGINATOR_ID",
+                    10: "CLUSTER_LIST",
                     # DPA unused (only ever made draft)
-                    11L: "DPA",
-                    12L: "ADVERTISER",
+                    11: "DPA",
+                    12: "ADVERTISER",
                     # RCID_PATH never sent to border routers
-                    13L: "RCID_PATH/CLUSTER_ID",
-                    14L: "MP_REACH_NLRI",
-                    15L: "MP_UNREACH_NLRI",
-                    16L: "EXT_COMMUNITIES",
+                    13: "RCID_PATH/CLUSTER_ID",
+                    14: "MP_REACH_NLRI",
+                    15: "MP_UNREACH_NLRI",
+                    16: "EXT_COMMUNITIES",
                     }
 DLIST = DLIST + [PATH_ATTRIBUTES]
 
-OPT_PARAMS = { 1L: "AUTHENTICATION",
-               2L: "CAPABILITY"
+OPT_PARAMS = { 1: "AUTHENTICATION",
+               2: "CAPABILITY"
                }
 DLIST = DLIST + [OPT_PARAMS]
 
-CAP_CODES = { 0L: "UNDEF",
-              1L: "MULTIPROTOCOL_EXT",
-              2L: "ROUTE_REFRESH",
+CAP_CODES = { 0: "UNDEF",
+              1: "MULTIPROTOCOL_EXT",
+              2: "ROUTE_REFRESH",
 
-              64L: "GRACEFUL_RESTART",
+              64: "GRACEFUL_RESTART",
 
               # 128+ are reserved for vendor-specific applications
-              128L: "ROUTE_REFRESH_Z",
+              128: "ROUTE_REFRESH_Z",
               }
 DLIST = DLIST + [CAP_CODES]
 
-NLRI_SRC = { 0L: "IGP",
-             1L: "EGP",
-             2L: "INCOMPLETE"
+NLRI_SRC = { 0: "IGP",
+             1: "EGP",
+             2: "INCOMPLETE"
              }
 DLIST = DLIST + [NLRI_SRC]
 
-AS_PATH_SEG_TYPES = { 1L: "SET",
-                      2L: "SEQUENCE",
-                      3L: "CONFED_SET",
-                      4L: "CONFED_SEQUENCE"
+AS_PATH_SEG_TYPES = { 1: "SET",
+                      2: "SEQUENCE",
+                      3: "CONFED_SET",
+                      4: "CONFED_SEQUENCE"
                       }
 DLIST = DLIST + [AS_PATH_SEG_TYPES]
 
 for d in DLIST:
-    for k in d.keys():
+    for k in list(d.keys()):
         d[ d[k] ] = k
 
 #-------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ def parseBgpPdu(msg_type, msg_len, msg, verbose=1, level=0):
     else:
         rv = {"T": None, "L": 0, "V": None}
         if verbose > 0:
-            print level*INDENT + "[ *** UNKNOWN MESSAGE TYPE *** ]"
+            print(level*INDENT + "[ *** UNKNOWN MESSAGE TYPE *** ]")
 
     return rv
 
@@ -204,16 +204,16 @@ def parseOpen(msg_len, msg, verbose=1, level=0):
           }
 
     if verbose > 1:
-        print prtbin(level*INDENT, msg[:msg_len])
+        print(prtbin(level*INDENT, msg[:msg_len]))
 
     version, asn, holdtime, bgp_id = struct.unpack(">BHHL", msg[0:9])
 
     if verbose > 0:
-        print level*INDENT +\
-              "Open (len=%d):" % (msg_len+BGP_HDR_LEN, )
-        print (level+1)*INDENT +\
+        print(level*INDENT +\
+              "Open (len=%d):" % (msg_len+BGP_HDR_LEN, ))
+        print((level+1)*INDENT +\
               "version: %d, src AS: %d, holdtime: %d, BGP id: %s" %\
-              (version, asn, holdtime, id2str(bgp_id))
+              (version, asn, holdtime, id2str(bgp_id)))
 
     opts = parseBgpOpts(msg[9:msg_len], verbose, level+1)
 
@@ -233,10 +233,10 @@ def parseBgpOpts(opts, verbose=1, level=0):
 
     opts_len = struct.unpack("B", opts[0])
     if verbose > 1:
-        print prtbin(level*INDENT, opts[0])
+        print(prtbin(level*INDENT, opts[0]))
 
     if verbose > 0:
-        print level*INDENT + "optional params. len=%d" % opts_len
+        print(level*INDENT + "optional params. len=%d" % opts_len)
 
     opts = opts[1:]
     while len(opts) > 0:
@@ -247,10 +247,10 @@ def parseBgpOpts(opts, verbose=1, level=0):
                 }
 
         if verbose > 1:
-            print prtbin(level*INDENT, opts[0:2+opt_len])
+            print(prtbin(level*INDENT, opts[0:2+opt_len]))
         if verbose > 0:
-            print level*INDENT +\
-                  "option type: %s, len=%d" % (OPT_PARAMS[opt_type], opt_len)
+            print(level*INDENT +\
+                  "option type: %s, len=%d" % (OPT_PARAMS[opt_type], opt_len))
 
         opts = opts[2:]
 
@@ -266,18 +266,18 @@ def parseBgpOpts(opts, verbose=1, level=0):
 
             if verbose > 0:
                 if verbose > 1:
-                    print prtbin(level*INDENT, opts[0:2+cap_len])
-                print level*INDENT +\
-                      "capability:", CAP_CODES[cap_code], "len=" + `cap_len`
+                    print(prtbin(level*INDENT, opts[0:2+cap_len]))
+                print(level*INDENT +\
+                      "capability:", CAP_CODES[cap_code], "len=" + repr(cap_len))
 
                 if verbose > 1:
-                    print prtbin(level*INDENT, opts[2:2+cap_len])
+                    print(prtbin(level*INDENT, opts[2:2+cap_len]))
 
                 if cap_code == CAP_CODES["MULTIPROTOCOL_EXT"]:
                     afi, safi = struct.unpack(">HH", opts[2:2+cap_len])
                     if verbose > 0:
-                        print level*INDENT +\
-                              "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi]
+                        print(level*INDENT +\
+                              "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi])
 
                     trv["V"]["V"] = { "AFI": afi, "SAFI": safi }
 
@@ -286,13 +286,13 @@ def parseBgpOpts(opts, verbose=1, level=0):
                                                           opts[2:2+cap_len])
                     flg_preserve_fwd_st = (af_flags & (1<<7)) >> 7
                     if verbose > 0:
-                        print level*INDENT +\
+                        print(level*INDENT +\
                               "restart flags:", (rinfo >> 12), \
                               "restart time:", (rinfo & 0xFFF), \
-                              "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi]
-                        print level*INDENT +\
+                              "afi:", AFI_TYPES[afi], "safi:", SAFI_TYPES[safi])
+                        print(level*INDENT +\
                               "address family flags: [ %s ]" % \
-                              ("forwarding state preserved"*flg_preserve_fwd_st)
+                              ("forwarding state preserved"*flg_preserve_fwd_st))
 
                     trv["V"]["V"] = { "AFI": afi, "SAFI": safi,
                                       "RESTART_FLAGS": rinfo >> 12,
@@ -308,14 +308,14 @@ def parseBgpOpts(opts, verbose=1, level=0):
                     pass
 
                 else:
-                    print level*INDENT +\
-                          "[ *** UNKNOWN CAPABILITY CODE: %d *** ]" % cap_code
+                    print(level*INDENT +\
+                          "[ *** UNKNOWN CAPABILITY CODE: %d *** ]" % cap_code)
             level = level - 1
 
         else:
             if verbose > 0:
-                print level*INDENT +\
-                      "[ *** UNKNOWN OPTIONAL PARAMETER: %d *** ]" % opt_type
+                print(level*INDENT +\
+                      "[ *** UNKNOWN OPTIONAL PARAMETER: %d *** ]" % opt_type)
 
         rv.append(trv)
         opts = opts[opt_len:]
@@ -458,10 +458,10 @@ def parseUpdate(msg_len, msg, verbose=1, level=0):
         curp = curp + plen_octets
 
     if verbose > 0:
-        print level*INDENT +\
+        print(level*INDENT +\
               "Update (len=%d): unfeasible_len=%d path_attr_len=%d%s%s%s" %\
               (msg_len+BGP_HDR_LEN, unfeasible_len, path_attr_len,
-               unfeasible_pfxs, path_attrs, nlri_pfxs)
+               unfeasible_pfxs, path_attrs, nlri_pfxs))
 
     return rv
 
@@ -478,7 +478,7 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
         ret = level*INDENT + PATH_ATTRIBUTES[atype] + ": null"
         return (ret, rv)
 
-    if atype in PATH_ATTRIBUTES.keys():
+    if atype in list(PATH_ATTRIBUTES.keys()):
 
         if atype == PATH_ATTRIBUTES["ORIGIN"]:
             (nlri_src, ) = struct.unpack("B", adata)
@@ -526,12 +526,12 @@ def parseBgpAttr(atype, alen, adata, verbose=1, level=0):
 
         elif atype == PATH_ATTRIBUTES["MULTI_EXIT_DISCRIMINATOR"]:
             (med, ) = struct.unpack(">L", adata)
-            ret     = level*INDENT + "MED: " + `med`
+            ret     = level*INDENT + "MED: " + repr(med)
             rv["V"] = med
 
         elif atype == PATH_ATTRIBUTES["LOC_PREF"]:
             (lp, ) = struct.unpack(">L", adata)
-            ret    = level*INDENT + "LOC_PREF: " + `lp`
+            ret    = level*INDENT + "LOC_PREF: " + repr(lp)
             rv["V"] = lp
 
         # ATOMIC_AGGREGATOR hit by null check at start...
@@ -594,16 +594,16 @@ def parseNotify(msg_len, msg, verbose=1, level=0):
           }
 
     if verbose > 1:
-        print prtbin(level*INDENT, msg[:msg_len])
+        print(prtbin(level*INDENT, msg[:msg_len]))
 
     code, subcode, data = struct.unpack("BB %ds" % (msg_len-2, ), msg)
     code    = code - 1
     subcode = subcode - 1
 
     if verbose > 0:
-        print level*INDENT + "Notification (len=%d): %s : %s" %\
+        print(level*INDENT + "Notification (len=%d): %s : %s" %\
               (msg_len,
-               NOTIFY_STRINGS[code][0], NOTIFY_STRINGS[code][1][subcode])
+               NOTIFY_STRINGS[code][0], NOTIFY_STRINGS[code][1][subcode]))
 
     ## XXX data?
 
@@ -619,10 +619,10 @@ def parseKeepalive(msg_len, msg, verbose=1, level=0):
           }
 
     if verbose > 1:
-        print prtbin(level*INDENT, msg)
+        print(prtbin(level*INDENT, msg))
 
     if verbose > 0:
-        print level*INDENT + "Keepalive (len=%d)\n" % (msg_len+BGP_HDR_LEN, )
+        print(level*INDENT + "Keepalive (len=%d)\n" % (msg_len+BGP_HDR_LEN, ))
 
     return rv
 
@@ -636,10 +636,10 @@ def parseRouteRefresh(msg_len, msg, verbose=1, level=0):
           }
 
     if verbose > 1:
-        print prtbin(level*INDENT, msg)
+        print(prtbin(level*INDENT, msg))
 
     if verbose > 0:
-        print level*INDENT +  "RouteRefresh (len=%d)" % (msg_len+BGP_HDR_LEN, )
+        print(level*INDENT +  "RouteRefresh (len=%d)" % (msg_len+BGP_HDR_LEN, ))
 
     return rv
 
@@ -665,10 +665,10 @@ def parseTableEntry(length, entries, verbose=1, level=0):
     rv["V"]["PEER_AS"] = peer_as
 
     if verbose:
-        print level*INDENT +\
+        print(level*INDENT +\
               "prefix: %s/%d, peer IP: %s, peer AS: %d" %\
-              (id2str(pfx), plen, id2str(peer_addr), peer_as)
-        print level*INDENT + "updated: '%s'" % (time.ctime(uptime),)
+              (id2str(pfx), plen, id2str(peer_addr), peer_as))
+        print(level*INDENT + "updated: '%s'" % (time.ctime(uptime),))
 
     entries = entries[TABLE_DUMP_ENTRY_HDR_LEN:]
     rv["V"]["ATTRS"] = entries
@@ -678,12 +678,12 @@ def parseTableEntry(length, entries, verbose=1, level=0):
     # a hurry.
 
     if verbose:
-        print level*INDENT + 'PATH ATTRIBUTES: len=%d' % elen
+        print(level*INDENT + 'PATH ATTRIBUTES: len=%d' % elen)
 
     rv["L"] = TABLE_DUMP_ENTRY_HDR_LEN + elen
     while elen:
         if verbose > 1:
-            print prthex(level*INDENT + 'flags/type:', entries[:2])
+            print(prthex(level*INDENT + 'flags/type:', entries[:2]))
 
         aflags, atype = struct.unpack(">BB", entries[0:2])
 
@@ -699,27 +699,27 @@ def parseTableEntry(length, entries, verbose=1, level=0):
         flgs_str = " [ %s ]" % flgs_str
 
         if verbose > 1:
-            print prthex(level*INDENT + 'length:',
-                         entries[2+flg_extlen:2+flg_extlen+1])
+            print(prthex(level*INDENT + 'length:',
+                         entries[2+flg_extlen:2+flg_extlen+1]))
         (alen, ) = struct.unpack("%dB" % (flg_extlen+1),
                                  entries[2:2+flg_extlen+1])
         (adata,) = struct.unpack("%ds" % alen,
                                  entries[2+flg_extlen+1:2+flg_extlen+1+alen])
 
         if verbose > 1:
-            print prthex(level*INDENT +'value:',
-                         entries[2+flg_extlen+1:2+flg_extlen+1+alen])
+            print(prthex(level*INDENT +'value:',
+                         entries[2+flg_extlen+1:2+flg_extlen+1+alen]))
 
         (astr, arv) = parseBgpAttr(atype, alen, adata, verbose, level+1)
 
         rv["V"][atype] = arv
 
         if verbose:
-            print astr + flgs_str
+            print(astr + flgs_str)
         entries = entries[2+flg_extlen+1+alen:]
         elen    = elen - (2+flg_extlen+1+alen)
 
-    if verbose: print
+    if verbose: print()
     return rv
 
 ################################################################################
@@ -818,9 +818,9 @@ class Bgp:
         ## message available in msg
 
         if verbose > 2:
-            print "recvMsg: msg: type=%s (%d) len=%d%s" %\
+            print("recvMsg: msg: type=%s (%d) len=%d%s" %\
                   (MSG_TYPES[msg_type], msg_type, msg_len,
-                   prtbin(level*INDENT, msg))
+                   prtbin(level*INDENT, msg)))
 
         return msg_type, msg_len, msg
 
@@ -839,9 +839,9 @@ class Bgp:
             self._mrt.writeBgp4mpMsg(msg_type, len(pkt), pkt)
 
         if verbose > 2:
-            print "%ssendMsg: type=%s (%d), len=%d%s" %\
+            print("%ssendMsg: type=%s (%d), len=%d%s" %\
                   (level*INDENT, MSG_TYPES[msg_type], msg_type,
-                   struct.calcsize(fmt), prtbin((level+1)*INDENT, pkt))
+                   struct.calcsize(fmt), prtbin((level+1)*INDENT, pkt)))
 
         self._sock.send(pkt)
 
@@ -857,10 +857,10 @@ class Bgp:
             self._mrt.writeBgp4mpMsg(msg_type, msg_len, msg)
 
         if verbose > 2:
-            print "%sparseMsg: type=%s (%d) len=%d%s" %\
+            print("%sparseMsg: type=%s (%d) len=%d%s" %\
                   (level*INDENT, MSG_TYPES[msg_type], msg_type,
                    msg_len-BGP_HDR_LEN,
-                   prtbin((level+1)*INDENT, msg[BGP_HDR_LEN:]))
+                   prtbin((level+1)*INDENT, msg[BGP_HDR_LEN:])))
 
         rv = parseBgpPdu(msg_type, msg_len, msg, verbose, level)
 
@@ -870,16 +870,16 @@ class Bgp:
 
     def sendOpen(self, verbose=1, level=0):
 
-        print `type(self._bgp_id)`, `self._bgp_id`
+        print(repr(type(self._bgp_id)), repr(self._bgp_id))
 
         fmt = ">BHHLB"
         msg = struct.pack(fmt, Bgp._version,
                           self._bgp_as, self._holdtime, self._bgp_id, 0)
 
         if verbose > 2:
-            print "%ssendOpen: len=%d%s" %\
+            print("%ssendOpen: len=%d%s" %\
                   (level*INDENT, struct.calcsize(fmt),
-                   prtbin((level+1)*INDENT, msg))
+                   prtbin((level+1)*INDENT, msg)))
 
         parseOpen(len(msg), msg, verbose, level)
         self.sendMsg(MSG_TYPES["OPEN"],
@@ -890,8 +890,8 @@ class Bgp:
         fmt = ""
         msg = ""
         if verbose > 2:
-            print "sendKeepalive: len=%d%s" %\
-                  (struct.calcsize(fmt), prtbin(level*INDENT, msg))
+            print("sendKeepalive: len=%d%s" %\
+                  (struct.calcsize(fmt), prtbin(level*INDENT, msg)))
 
         parseKeepalive(len(msg), msg, verbose, level)
         self.sendMsg(MSG_TYPES["KEEPALIVE"], 0, msg, verbose, level)
@@ -924,7 +924,7 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ] ([*] options required):
+        print("""Usage: %s [ options ] ([*] options required):
         -h|--help     : Help
         -q|--quiet    : Be quiet
         -v|--verbose  : Be verbose
@@ -941,7 +941,7 @@ if __name__ == "__main__":
         -t|--port     : BGP peer listening port [def: %d]
         -z|--size     : Size of output file(s) [min: %d]""" %\
             (os.path.basename(sys.argv[0]), mrtd.DEFAULT_FILE,
-             BGP_LISTEN_PORT, mrtd.MIN_FILE_SZ)
+             BGP_LISTEN_PORT, mrtd.MIN_FILE_SZ))
         sys.exit(0)
 
     #---------------------------------------------------------------------------
@@ -1020,7 +1020,7 @@ if __name__ == "__main__":
     bgp._mrt = mrtd.Mrtd(file_pfx, "w+b", file_sz, mrtd_type, bgp)
 
     if VERBOSE > 0:
-        print `bgp`
+        print(repr(bgp))
 
     try:
 

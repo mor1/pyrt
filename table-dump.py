@@ -92,8 +92,8 @@ def processEntry(rv):
                 rval = struct.pack('>%dsL' % len(rval), rval, v)
 
         else:
-            print '[ *** Unsupported attribute:', \
-                  bgp.PATH_ATTRIBUTES[attr], '*** ]'
+            print('[ *** Unsupported attribute:', \
+                  bgp.PATH_ATTRIBUTES[attr], '*** ]')
             return None
 
         if aval["FLAGS"]['extlen']:
@@ -112,7 +112,7 @@ def processEntry(rv):
         del TABLE[pfx]
 
     astr = ""
-    for attr in rv["V"]["V"]["PATH_ATTRS"].keys():
+    for attr in list(rv["V"]["V"]["PATH_ATTRS"].keys()):
         rstr = mkStr(attr, rv["V"]["V"]["PATH_ATTRS"][attr])
         astr = struct.pack('%ds%ds' % (len(astr), len(rstr)),
                            astr, rstr)
@@ -136,7 +136,7 @@ def dumpTable():
     error('dumping...')
 
     seq_no = 0
-    for (pfx, plen) in TABLE.keys():
+    for (pfx, plen) in list(TABLE.keys()):
         attr_len = len(TABLE[(pfx,plen)]['ATTRS'])
         common_hdr = struct.pack('>HH', VIEW_NO, seq_no)
         entry      = struct.pack('>4sBBLLHH%ds' % attr_len,
@@ -157,7 +157,7 @@ def dumpTable():
         of.write('%s%s%s' % (mrt_hdr, common_hdr, entry))
         seq_no = seq_no + 1
 
-    error('[%d] entries...' % len(TABLE.keys()) )
+    error('[%d] entries...' % len(list(TABLE.keys())) )
 
     of.close()
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ] <filenames>:
+        print("""Usage: %s [ options ] <filenames>:
         -h|--help       : Help
         -q|--quiet      : Be quiet
         -v|--verbose    : Be verbose
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         -s|--start-time : Start time of packets of interest [inclusive]
         -i|--interval   : Table dump invterval (minutes)
         -t|--table      : Initial table [def.: none]""" %\
-            (os.path.basename(sys.argv[0]),)
+            (os.path.basename(sys.argv[0]),))
         sys.exit(0)
 
     #---------------------------------------------------------------------------
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         mrt.close()
         error('done\n')
 
-    print 'init entries:', `len(TABLE.keys())`
+    print('init entries:', repr(len(list(TABLE.keys()))))
 
     # process UPDATE files
 

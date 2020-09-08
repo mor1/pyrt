@@ -36,14 +36,14 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ] <filenames>:
+        print("""Usage: %s [ options ] <filenames>:
         -h|--help      : Help
         -v|--verbose   : Be verbose
         -q|--quiet     : Be quiet
 
         -s|--start-time: Start time of packets of interest [inclusive]
         -t|--end-time  : End time of packets of interest [inclusive]""" %\
-            (os.path.basename(sys.argv[0]),)
+            (os.path.basename(sys.argv[0]),))
         sys.exit(0)
 
     #---------------------------------------------------------------------------

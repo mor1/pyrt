@@ -48,7 +48,7 @@ def mask2plen(mask):
 
 def plen2mask(plen):
 
-    return pow(2L, 32) - pow(2L, 32-plen)
+    return pow(2, 32) - pow(2, 32-plen)
 
 #-------------------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ def rpfx2str(pfxtup):
 
 def id2pfx(id):
 
-    a = int( ((id & 0xff000000L) >> 24) & 0xff)
+    a = int( ((id & 0xff000000) >> 24) & 0xff)
     b = int( ((id & 0x00ff0000)  >> 16) & 0xff)
     c = int( ((id & 0x0000ff00)  >>  8) & 0xff)
     d = int( ((id & 0x000000ff))        & 0xff)
@@ -125,7 +125,7 @@ def id2pfx(id):
 def id2str(id):
 
     return "%d.%d.%d.%d" %\
-           (int( ((id & 0xff000000L) >> 24) & 0xff),
+           (int( ((id & 0xff000000) >> 24) & 0xff),
             int( ((id & 0x00ff0000)  >> 16) & 0xff),
             int( ((id & 0x0000ff00)  >>  8) & 0xff),
             int( (id  & 0x000000ff)         & 0xff) )
@@ -170,7 +170,7 @@ def str2hex(str):
     if str == None or str == "":
         return ""
 
-    ret = map(lambda x: '%0.2x' % x, map(ord, str))
+    ret = ['%0.2x' % x for x in list(map(ord, str))]
     ret = string.join(ret, '.')
 
     return ret
@@ -195,7 +195,7 @@ def str2mac(str):
     if len(bytes) != 6:
         return
 
-    bytes = map(lambda x: string.atoi(x, 16), bytes)
+    bytes = [string.atoi(x, 16) for x in bytes]
     return struct.pack("BBB BBB",
                        bytes[0], bytes[1], bytes[2],
                        bytes[3], bytes[4], bytes[5])
@@ -214,7 +214,7 @@ def str2bin(str):
         for j in range(7, -1, -1):
             b = n / (2**j)
             n = n % (2**j)
-            s = s + `b`
+            s = s + repr(b)
         ret = ret + ("%s." % s)
 
     return ret
@@ -243,7 +243,7 @@ def int2bin(int):
     ret = "" ; bit = 0
     while int != 0:
         if bit % 8 == 0: ret = '.' + ret
-        ret = `int%2` + ret
+        ret = repr(int%2) + ret
         int = int >> 1
         bit += 1
 

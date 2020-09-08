@@ -26,24 +26,24 @@ import os, time, struct, getopt, sys, math, pprint, traceback
 
 try:
     import bgp
-except ImportError, ie:
+except ImportError as ie:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ie
+    print("### File:", tb[0], "Line:", tb[1], ":", ie)
 
 try:
     import isis
-except ImportError, ie:
+except ImportError as ie:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ie
+    print("### File:", tb[0], "Line:", tb[1], ":", ie)
 
 try:
     import ospf
-except ImportError, ie:
+except ImportError as ie:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ie
+    print("### File:", tb[0], "Line:", tb[1], ":", ie)
 
 from mutils import *
 
@@ -78,27 +78,27 @@ DLIST = []
 # MRTD values
 #
 
-MSG_TYPES = { 0L:  "NULL",
-              1L:  "START",                # sender is starting up
-              2L:  "DIE",                  # receiver should shutdown
-              3L:  "I_AM_DEAD",            # sender is shutting down
-              4L:  "PEER_DOWN",            # sender's peer is down
-              5L:  "PROTOCOL_BGP",
-              6L:  "PROTOCOL_RIP",
-              7L:  "PROTOCOL_IDRP",
-              8L:  "PROTOCOL_RIPNG",
-              9L:  "PROTOCOL_BGP4PLUS",
-              10L: "PROTOCOL_BGP4PLUS_01",
-              11L: "PROTOCOL_OSPF2",
-              12L: "TABLE_DUMP",           # routing table dump
+MSG_TYPES = { 0:  "NULL",
+              1:  "START",                # sender is starting up
+              2:  "DIE",                  # receiver should shutdown
+              3:  "I_AM_DEAD",            # sender is shutting down
+              4:  "PEER_DOWN",            # sender's peer is down
+              5:  "PROTOCOL_BGP",
+              6:  "PROTOCOL_RIP",
+              7:  "PROTOCOL_IDRP",
+              8:  "PROTOCOL_RIPNG",
+              9:  "PROTOCOL_BGP4PLUS",
+              10: "PROTOCOL_BGP4PLUS_01",
+              11: "PROTOCOL_OSPF2",
+              12: "TABLE_DUMP",           # routing table dump
 
-              16L: "PROTOCOL_BGP4MP",      # Zebra BGP4
+              16: "PROTOCOL_BGP4MP",      # Zebra BGP4
 
-              17L: "PROTOCOL_BGP4PY",      # PyRT BGP4 (ext. time stamp)
-              32L: "PROTOCOL_ISIS",        # ISIS
-              33L: "PROTOCOL_ISIS2",       # ISIS + ext. time stamp
+              17: "PROTOCOL_BGP4PY",      # PyRT BGP4 (ext. time stamp)
+              32: "PROTOCOL_ISIS",        # ISIS
+              33: "PROTOCOL_ISIS2",       # ISIS + ext. time stamp
 
-              64L: "PROTOCOL_OSPF2",       # OSPF v2
+              64: "PROTOCOL_OSPF2",       # OSPF v2
               }
 DLIST = DLIST + [MSG_TYPES]
 
@@ -106,94 +106,94 @@ try:
     TABLE_DUMP_SUBTYPES = bgp.AFI_TYPES
     DLIST = DLIST + [TABLE_DUMP_SUBTYPES]
 
-    BGP_SUBTYPES = { 0L: "NULL",
-                     1L: "UPDATE",       # raw update
-                     2L: "PREF_UPDATE",  # (T,L,V) prefs. followed by raw update
-                     3L: "STATE_CHANGE", # state change
-                     4L: "SYNC",
+    BGP_SUBTYPES = { 0: "NULL",
+                     1: "UPDATE",       # raw update
+                     2: "PREF_UPDATE",  # (T,L,V) prefs. followed by raw update
+                     3: "STATE_CHANGE", # state change
+                     4: "SYNC",
 
                      # XXX RMM XXX apparently bogo-extensions for some of RIS data?
                      # See, eg., updates.20000814.1631
 
-                     5L: "BOGO_RIS_EXTN_1",
-                     7L: "BOGO_RIS_EXTN_2",
+                     5: "BOGO_RIS_EXTN_1",
+                     7: "BOGO_RIS_EXTN_2",
 
                      # XXX RMM XXX extensions for other raw messages
-                     129L: "OPEN",
-                     131L: "NOTIFICATION",
-                     132L: "KEEPALIVE",
-                     133L: "ROUTE_REFRESH",
+                     129: "OPEN",
+                     131: "NOTIFICATION",
+                     132: "KEEPALIVE",
+                     133: "ROUTE_REFRESH",
                      }
     DLIST = DLIST + [BGP_SUBTYPES]
 
-    BGP4MP_SUBTYPES = { 0L: "STATE_CHANGE",
-                        1L: "MESSAGE",
-                        2L: "ENTRY",
-                        3L: "SNAPSHOT"
+    BGP4MP_SUBTYPES = { 0: "STATE_CHANGE",
+                        1: "MESSAGE",
+                        2: "ENTRY",
+                        3: "SNAPSHOT"
                         }
     DLIST = DLIST + [BGP4MP_SUBTYPES]
 
-    BGP4PY_SUBTYPES = { 0L: "STATE_CHANGE",
-                        1L: "MESSAGE",
-                        2L: "ENTRY",
-                        3L: "SNAPSHOT"
+    BGP4PY_SUBTYPES = { 0: "STATE_CHANGE",
+                        1: "MESSAGE",
+                        2: "ENTRY",
+                        3: "SNAPSHOT"
                         }
     DLIST = DLIST + [BGP4PY_SUBTYPES]
-except NameError, ne:
+except NameError as ne:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ne
+    print("### File:", tb[0], "Line:", tb[1], ":", ne)
 
 try:
     ISIS_SUBTYPES = isis.MSG_TYPES
     DLIST = DLIST + [ISIS_SUBTYPES]
-except NameError, ne:
+except NameError as ne:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ne
+    print("### File:", tb[0], "Line:", tb[1], ":", ne)
 
 try:
     OSPF_SUBTYPES = ospf.MSG_TYPES
     DLIST += [OSPF_SUBTYPES]
 
-except NameError, ne:
+except NameError as ne:
     stk = traceback.extract_stack(limit=1)
     tb = stk[0]
-    print "### File:", tb[0], "Line:", tb[1], ":", ne
+    print("### File:", tb[0], "Line:", tb[1], ":", ne)
 
 #
 # GNU Zebra dump specific values
 #
 
-ZEBRA_STATES = { 1L: "IDLE",
-                 2L: "CONNECT",
-                 3L: "ACTIVE",
-                 4L: "OPENSENT",
-                 5L: "OPENCONFIRM",
-                 6L: "ESTABLISHED"
+ZEBRA_STATES = { 1: "IDLE",
+                 2: "CONNECT",
+                 3: "ACTIVE",
+                 4: "OPENSENT",
+                 5: "OPENCONFIRM",
+                 6: "ESTABLISHED"
                  }
 DLIST = DLIST + [ZEBRA_STATES]
 
-ZEBRA_EVENTS = { 1L:  "BGP_START",
-                 2L:  "BGP_STOP",
-                 3L:  "BGP_TRANS_CONN_OPEN",
-                 4L:  "BGP_TRANS_CONN_CLOSED",
-                 5L:  "BGP_TRANS_CONN_OPEN_FAILED",
-                 6L:  "BGP_TRANS_FATAL_ERROR",
-                 7L:  "CONNECTRETRY_TIMER_EXPIRED",
-                 8L:  "HOLD_TIMER_EXPIRED",
-                 9L:  "KEEPALIVE_TIMER_EXPIRED",
-                 10L: "RCV_OPEN_MSG",
-                 11L: "RCV_KEEPALIVE_MSG",
-                 12L: "RCV_UPDATE_MSG",
-                 13L: "RCV_NOTIFICATION_MSG"
+ZEBRA_EVENTS = { 1:  "BGP_START",
+                 2:  "BGP_STOP",
+                 3:  "BGP_TRANS_CONN_OPEN",
+                 4:  "BGP_TRANS_CONN_CLOSED",
+                 5:  "BGP_TRANS_CONN_OPEN_FAILED",
+                 6:  "BGP_TRANS_FATAL_ERROR",
+                 7:  "CONNECTRETRY_TIMER_EXPIRED",
+                 8:  "HOLD_TIMER_EXPIRED",
+                 9:  "KEEPALIVE_TIMER_EXPIRED",
+                 10: "RCV_OPEN_MSG",
+                 11: "RCV_KEEPALIVE_MSG",
+                 12: "RCV_UPDATE_MSG",
+                 13: "RCV_NOTIFICATION_MSG"
                  }
 DLIST = DLIST + [ZEBRA_EVENTS]
 
 #-------------------------------------------------------------------------------
 
 for d in DLIST:
-    for k in d.keys():
+    for k in list(d.keys()):
         d[ d[k] ] = k
 
 ################################################################################
@@ -204,14 +204,14 @@ def parseBgp4mpMrtHdr(hdr, verbose=1, level=0):
 
     if verbose > 0:
         if afi == bgp.AFI_TYPES["IP"]:
-            print level*INDENT + "AS(src): %d, AS(dst): %d" %\
-                  (src_as, dst_as)
-            print level*INDENT + "ifc idx: %d, AFI: %s" %\
-                  (ifc, bgp.AFI_TYPES[afi])
-            print level*INDENT + "IP(src): %s, IP(dst): %s" %\
-                  (id2str(src_ip), id2str(dst_ip))
+            print(level*INDENT + "AS(src): %d, AS(dst): %d" %\
+                  (src_as, dst_as))
+            print(level*INDENT + "ifc idx: %d, AFI: %s" %\
+                  (ifc, bgp.AFI_TYPES[afi]))
+            print(level*INDENT + "IP(src): %s, IP(dst): %s" %\
+                  (id2str(src_ip), id2str(dst_ip)))
         else:
-            print INDENT*level + "[ UNKNOWN ADDRESS FAMILY", `afi`, "]"
+            print(INDENT*level + "[ UNKNOWN ADDRESS FAMILY", repr(afi), "]")
 
     return src_as, dst_as, ifc, afi, src_ip, dst_ip
 
@@ -224,14 +224,14 @@ def parseBgp4pyMrtHdr(hdr, verbose=1, level=0):
 
     if verbose > 0:
         if afi == bgp.AFI_TYPES["IP"]:
-            print level*INDENT + "AS(src): %d, AS(dst): %d" %\
-                  (src_as, dst_as)
-            print level*INDENT + "ifc idx: %d, AFI: %s" %\
-                  (ifc, bgp.AFI_TYPES[afi])
-            print level*INDENT + "IP(src): %s, IP(dst): %s" %\
-                  (id2str(src_ip), id2str(dst_ip))
+            print(level*INDENT + "AS(src): %d, AS(dst): %d" %\
+                  (src_as, dst_as))
+            print(level*INDENT + "ifc idx: %d, AFI: %s" %\
+                  (ifc, bgp.AFI_TYPES[afi]))
+            print(level*INDENT + "IP(src): %s, IP(dst): %s" %\
+                  (id2str(src_ip), id2str(dst_ip)))
         else:
-            print INDENT*LEVEL + "[ UNKNOWN ADDRESS FAMILY", `afi`, "]"
+            print(INDENT*LEVEL + "[ UNKNOWN ADDRESS FAMILY", repr(afi), "]")
 
     return src_as, dst_as, ifc, afi, src_ip, dst_ip, ts_frac
 
@@ -338,40 +338,40 @@ class Mrtd:
         (ptime, ptype, psubtype, plen, phdr, pdata) = msg
 
         if verbose > 1:
-            print prtbin(level*INDENT, phdr)
+            print(prtbin(level*INDENT, phdr))
 
         if verbose > 0:
 
-            print level*INDENT + "[ " + time.ctime(ptime) + " ]"
-            print level*INDENT + "MRT packet: len: %d, type: %s, subtype:" %\
-                  (plen, MSG_TYPES.get(ptype, "UNKNOWN (%d)" % (ptype,))),
+            print(level*INDENT + "[ " + time.ctime(ptime) + " ]")
+            print(level*INDENT + "MRT packet: len: %d, type: %s, subtype:" %\
+                  (plen, MSG_TYPES.get(ptype, "UNKNOWN (%d)" % (ptype,))), end=' ')
 
             try:
                 if   ptype == MSG_TYPES["PROTOCOL_BGP4MP"]:
-                    print BGP4MP_SUBTYPES[psubtype]
+                    print(BGP4MP_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["PROTOCOL_BGP4PY"]:
-                    print BGP4MP_SUBTYPES[psubtype]
+                    print(BGP4MP_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["PROTOCOL_BGP"]:
-                    print BGP_SUBTYPES[psubtype]
+                    print(BGP_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["PROTOCOL_ISIS"]:
-                    print ISIS_SUBTYPES[psubtype]
+                    print(ISIS_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["PROTOCOL_ISIS2"]:
-                    print ISIS_SUBTYPES[psubtype]
+                    print(ISIS_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["PROTOCOL_OSPF2"]:
-                    print OSPF_SUBTYPES[psubtype]
+                    print(OSPF_SUBTYPES[psubtype])
 
                 elif ptype == MSG_TYPES["TABLE_DUMP"]:
-                    print TABLE_DUMP_SUBTYPES[psubtype]
+                    print(TABLE_DUMP_SUBTYPES[psubtype])
 
             except (KeyError):
                 if verbose:
-                    print level*INDENT +\
-                          '[ *** Unsupported subtype: %d *** ]' % psubtype
+                    print(level*INDENT +\
+                          '[ *** Unsupported subtype: %d *** ]' % psubtype)
                     return None
 
         if   ptype == MSG_TYPES["PROTOCOL_BGP"]:
@@ -396,19 +396,19 @@ class Mrtd:
             rv = self.parseTableDump(psubtype, plen, pdata, verbose, level+1)
 
         else:
-            rv = {"T": None, "L": 0, "V": None, "H": {"TIME":0L}}
+            rv = {"T": None, "L": 0, "V": None, "H": {"TIME":0}}
             if verbose:
-                print level*INDENT +\
+                print(level*INDENT +\
                       "[ *** Unsupported message type [ '%s' ] *** ]" %\
-                      self._file_name
-                print (level+1)*INDENT + 'time:', time.ctime(ptime)
-                print (level+1)*INDENT + 'header:', str2hex(phdr)
-                print (level+1)*INDENT + 'data:', str2hex(pdata)
+                      self._file_name)
+                print((level+1)*INDENT + 'time:', time.ctime(ptime))
+                print((level+1)*INDENT + 'header:', str2hex(phdr))
+                print((level+1)*INDENT + 'data:', str2hex(pdata))
 
         rv["H"]["TIME"] =  rv["H"]["TIME"] + ptime
         if verbose:
-            print (level+1)*INDENT +\
-                  "extended timestamp: %f\n" % rv["H"]["TIME"]
+            print((level+1)*INDENT +\
+                  "extended timestamp: %f\n" % rv["H"]["TIME"])
 
         return rv
 
@@ -441,17 +441,17 @@ class Mrtd:
         rv = { "T":  MSG_TYPES["PROTOCOL_BGP"],
                "ST": psubtype,
                "L":  plen,
-               "H":  { 'TIME': 0L },
+               "H":  { 'TIME': 0 },
                "V":  {}
                }
 
         if psubtype in (BGP_SUBTYPES['BOGO_RIS_EXTN_1'],
                         BGP_SUBTYPES['BOGO_RIS_EXTN_2']):
-            print INDENT*level + '[ *** skipping *** ]'
+            print(INDENT*level + '[ *** skipping *** ]')
             return rv
 
         if verbose > 1:
-            print prtbin(level*INDENT, pdata[:BGP_SUBTYPE_HDR_LEN])
+            print(prtbin(level*INDENT, pdata[:BGP_SUBTYPE_HDR_LEN]))
 
         try:
             src_as, src_ip, dst_as, dst_ip =\
@@ -462,20 +462,20 @@ class Mrtd:
             rv["H"]["DST_IP"] = dst_ip
 
         except (struct.error):
-            print INDENT*level + '[ *** struct error: bogus RIS data?! *** ]'
+            print(INDENT*level + '[ *** struct error: bogus RIS data?! *** ]')
             if psubtype == BGP_SUBTYPES['STATE_CHANGE']:
                 src, dst = struct.unpack(">HH", pdata[-4:])
-                print INDENT*level +\
+                print(INDENT*level +\
                       'state change: %s -> %s' %\
-                      (ZEBRA_STATES[src], ZEBRA_STATES[dst])
+                      (ZEBRA_STATES[src], ZEBRA_STATES[dst]))
 
             return rv
 
         if verbose > 0:
-            print level*INDENT + "IP(src): %s, AS(src): %d" %\
-                  (id2str(src_ip), src_as)
-            print level*INDENT + "IP(dst): %s, AS(dst): %d" %\
-                  (id2str(dst_ip), dst_as)
+            print(level*INDENT + "IP(src): %s, AS(src): %d" %\
+                  (id2str(src_ip), src_as))
+            print(level*INDENT + "IP(dst): %s, AS(dst): %d" %\
+                  (id2str(dst_ip), dst_as))
 
         pdata = pdata[BGP_SUBTYPE_HDR_LEN:]
         if pdata[0:len(bgp.BGP_MARKER)] != bgp.BGP_MARKER:
@@ -487,11 +487,11 @@ class Mrtd:
                                                 len(bgp.BGP_MARKER)+3])
 
         if verbose > 1:
-            print prtbin(level*INDENT, pdata[:bgp.BGP_HDR_LEN])
+            print(prtbin(level*INDENT, pdata[:bgp.BGP_HDR_LEN]))
 
         if verbose > 0:
-            print level*INDENT + "BGP message type: %s len=%d" %\
-                  (bgp.MSG_TYPES[msg_type], msg_len)
+            print(level*INDENT + "BGP message type: %s len=%d" %\
+                  (bgp.MSG_TYPES[msg_type], msg_len))
 
         rv["V"] = bgp.parseBgpPdu(msg_type, msg_len, pdata, verbose, level+1)
 
@@ -527,13 +527,13 @@ class Mrtd:
         rv = { "T":  MSG_TYPES["PROTOCOL_BGP4MP"],
                "ST": psubtype,
                "L":  plen,
-               "H":  { "TIME": 0L },
+               "H":  { "TIME": 0 },
                "V":  {}
                }
 
         if psubtype == BGP4MP_SUBTYPES["STATE_CHANGE"]:
             if verbose > 1:
-                print prtbin(level*INDENT, pdata)
+                print(prtbin(level*INDENT, pdata))
 
             # XXX HACK get occasional 8 byte packets dumped, which I don't
             # _believe_ to be valid; seem to have a "valid" state changes in
@@ -542,8 +542,8 @@ class Mrtd:
             if plen == 8:
 
                 if verbose > 0:
-                    print level*INDENT +\
-                          "[ *** BOGUS 8 byte PAYLOAD PACKET *** ]"
+                    print(level*INDENT +\
+                          "[ *** BOGUS 8 byte PAYLOAD PACKET *** ]")
                 pdata = pdata[4:]
 
             else:
@@ -563,8 +563,8 @@ class Mrtd:
             start_st, end_st = struct.unpack(">HH", pdata)
             rv["V"] = (start_st, end_st)
             if verbose > 0:
-                print level*INDENT + "%s -> %s\n" %\
-                      (ZEBRA_STATES[start_st], ZEBRA_STATES[end_st])
+                print(level*INDENT + "%s -> %s\n" %\
+                      (ZEBRA_STATES[start_st], ZEBRA_STATES[end_st]))
 
         elif psubtype == BGP4MP_SUBTYPES["MESSAGE"]:
 
@@ -574,13 +574,13 @@ class Mrtd:
             if pdata[0:4+bgp.BGP_MARKER_LEN] == ("\000\000\000\000" +
                                                  bgp.BGP_MARKER):
                 if verbose > 1:
-                    print prtbin(level*INDENT, pdata[:4])
+                    print(prtbin(level*INDENT, pdata[:4]))
                 if verbose > 0:
-                    print level*INDENT + "[ *** BOGUS NULL MRT HEADER *** ]"
+                    print(level*INDENT + "[ *** BOGUS NULL MRT HEADER *** ]")
                 pdata = pdata[4:]
             else:
                 if verbose > 1:
-                    print prtbin(level*INDENT, pdata[:BGP4MP_SUBTYPE_HDR_LEN])
+                    print(prtbin(level*INDENT, pdata[:BGP4MP_SUBTYPE_HDR_LEN]))
                 src_as, dst_as, ifc, afi, src_ip, dst_ip =\
                         parseBgp4mpMrtHdr(pdata[0:BGP4MP_SUBTYPE_HDR_LEN],
                                           verbose, level)
@@ -600,7 +600,7 @@ class Mrtd:
             rv["V"] = bgp.parseBgpPdu(msg_type, msg_len, pdata, verbose, level)
 
         else:
-            print level*INDENT + "[ *** SUBTYPE: %d NOT PARSED *** ]" % psubtype
+            print(level*INDENT + "[ *** SUBTYPE: %d NOT PARSED *** ]" % psubtype)
 
         return rv
 
@@ -630,12 +630,12 @@ class Mrtd:
         rv = { "T":  MSG_TYPES["PROTOCOL_BGP4PY"],
                "ST": psubtype,
                "L":  plen,
-               "H":  { "TIME": 0L },
+               "H":  { "TIME": 0 },
                "V":  {}
                }
 
         if verbose > 1:
-            print prtbin(level*INDENT, pdata[:BGP4PY_SUBTYPE_HDR_LEN])
+            print(prtbin(level*INDENT, pdata[:BGP4PY_SUBTYPE_HDR_LEN]))
 
         src_as, dst_as, ifc, afi, src_ip, dst_ip, ts_frac =\
                 parseBgp4pyMrtHdr(pdata[0:BGP4PY_SUBTYPE_HDR_LEN], verbose, level)
@@ -655,8 +655,8 @@ class Mrtd:
             start_st, end_st = struct.unpack(">HH", pdata)
             rv["V"] = (start_st, end_st)
             if verbose > 0:
-                print level*INDENT + "%s -> %s\n" %\
-                      (ZEBRA_STATES[start_st], ZEBRA_STATES[end_st])
+                print(level*INDENT + "%s -> %s\n" %\
+                      (ZEBRA_STATES[start_st], ZEBRA_STATES[end_st]))
 
         elif psubtype == BGP4PY_SUBTYPES["MESSAGE"]:
 
@@ -666,7 +666,7 @@ class Mrtd:
             rv["V"] = bgp.parseBgpPdu(msg_type, msg_len, pdata, verbose, level)
 
         else:
-            print level*INDENT + "[ *** SUBTYPE: %d NOT PARSED *** ]" % psubtype
+            print(level*INDENT + "[ *** SUBTYPE: %d NOT PARSED *** ]" % psubtype)
 
         return rv
 
@@ -681,9 +681,9 @@ class Mrtd:
     def parseIsisMsg(self, plen, pdata, verbose=1, level=0):
 
         rv = { "T":  MSG_TYPES["PROTOCOL_ISIS"],
-               "ST": 0L,
+               "ST": 0,
                "L":  plen,
-               "H":  { "TIME": 0L },
+               "H":  { "TIME": 0 },
                "V":  {}
                }
 
@@ -703,9 +703,9 @@ class Mrtd:
     def parseIsis2Msg(self, plen, pdata, verbose=1, level=0):
 
         rv = { "T":  MSG_TYPES["PROTOCOL_ISIS2"],
-               "ST": 0L,
+               "ST": 0,
                "L":  plen,
-               "H":  { "TIME": 0L },
+               "H":  { "TIME": 0 },
                "V":  {}
                }
 
@@ -728,9 +728,9 @@ class Mrtd:
     def parseOspfMsg(self, plen, pdata, verbose=1, level=0):
 
         rv = { "T": MSG_TYPES["PROTOCOL_OSPF2"],
-               "ST": 0L,
+               "ST": 0,
                "L": plen,
-               "H": { "TIME": 0L, },
+               "H": { "TIME": 0, },
                "V": {}
             }
 
@@ -749,12 +749,12 @@ class Mrtd:
         rv = { "T":  MSG_TYPES["TABLE_DUMP"],
                "ST": psubtype,
                "L":  plen,
-               "H":  { "TIME": 0L },
+               "H":  { "TIME": 0 },
                "V":  []
                }
 
         if verbose > 1:
-            print prtbin(level*INDENT, pdata[:TABLE_DUMP_HDR_LEN])
+            print(prtbin(level*INDENT, pdata[:TABLE_DUMP_HDR_LEN]))
 
         view, seqno = struct.unpack(">HH", pdata[:TABLE_DUMP_HDR_LEN])
 
@@ -762,7 +762,7 @@ class Mrtd:
         rv["H"]["SEQNO"] = seqno
 
         if verbose:
-            print INDENT*level + "view: %d, seqno: %d" % (view, seqno)
+            print(INDENT*level + "view: %d, seqno: %d" % (view, seqno))
 
         pdata = pdata[TABLE_DUMP_HDR_LEN:]
         while len(pdata):
@@ -787,14 +787,14 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ]:
+        print("""Usage: %s [ options ]:
         -h|--help      : Help
         -q|--quiet     : Be quiet
         -v|--verbose   : Be verbose
 
         -f|--file      : Set file name to parse (def: %s)
         -z|--file-size : Set size of output file(s)""" %\
-            (os.path.basename(sys.argv[0]), DEFAULT_FILE)
+            (os.path.basename(sys.argv[0]), DEFAULT_FILE))
         sys.exit(0)
 
     #---------------------------------------------------------------------------
@@ -841,9 +841,9 @@ if __name__ == "__main__":
             if VERBOSE > 2: pprint.pprint(rv)
 
     except (EOFExc):
-        print "End of file"
+        print("End of file")
     except (KeyboardInterrupt):
-        print "Interrupted"
+        print("Interrupted")
 
     mrt.close()
     sys.exit(0)

@@ -34,11 +34,11 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ] <filenames>:
+        print("""Usage: %s [ options ] <filenames>:
         -h|--help      : Help
         -v|--verbose   : Be verbose
         -q|--quiet     : Be quiet""" %\
-            (os.path.basename(sys.argv[0]),)
+            (os.path.basename(sys.argv[0]),))
         sys.exit(0)
 
     #---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ if __name__ == "__main__":
                     of.write(msg)
                 else:
                     if VERBOSE:
-                        print prthex("msg %d: " % cnt, msg)
+                        print(prthex("msg %d: " % cnt, msg))
                     error('msg %d dirty...' % cnt)
 
         except (mrtd.EOFExc):

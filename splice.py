@@ -38,7 +38,7 @@ class Msg:
 
     def __repr__(self):
 
-        return "%s: %s" % (self._mrt._file_name, `self._time`)
+        return "%s: %s" % (self._mrt._file_name, repr(self._time))
 
     def __cmp__(self, other):
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     def usage():
 
-        print """Usage: %s [ options ] <filenames>:
+        print("""Usage: %s [ options ] <filenames>:
         -h|--help       : Help
         -q|--quiet      : Be quiet
         -v|--verbose    : Be verbose
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         -z|--file-size  : Size of output file(s) [min: %d]
         -s|--start-time : Start time of packets of interest [inclusive]
         -t|--end-time   : End time of packets of interest [inclusive]""" %\
-            (os.path.basename(sys.argv[0]), mrtd.MIN_FILE_SZ)
+            (os.path.basename(sys.argv[0]), mrtd.MIN_FILE_SZ))
         sys.exit(0)
 
     #---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
                     of.write(msg)
                     if VERBOSE > 2:
-                        print prtbin("", msg)
+                        print(prtbin("", msg))
                     rv = msgs[0].parse(VERBOSE)
 
                 msg = msgs[0]._mrt.read()
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                 del msgs[0]
 
     except (KeyboardInterrupt):
-        print "Interrupted"
+        print("Interrupted")
 
     sys.exit(0)
 
