@@ -134,22 +134,22 @@ def id2str(id):
 
 def str2id(str):
 
-    quads = string.split(str, '.')
-    ret   = (string.atol(quads[0]) << 24) + (string.atol(quads[1]) << 16) + \
-            (string.atol(quads[2]) <<  8) + (string.atol(quads[3]) <<  0)
+    quads = str.split('.')
+    ret   = (int(quads[0]) << 24) + (int(quads[1]) << 16) + \
+            (int(quads[2]) <<  8) + (int(quads[3]) <<  0)
     return ret
 
 #-------------------------------------------------------------------------------
 
 def str2pfx(strng):
 
-    pfx, plen = string.split(strng, '/')
-    plen = string.atoi(plen)
+    pfx, plen = strng.split('/')
+    plen = int(plen)
 
-    pfx = string.split(pfx, '.')
+    pfx = pfx.split('.')
     p   = ''
     for e in pfx:
-        p = struct.pack('%dsB' % len(p), p, string.atoi(e))
+        p = struct.pack('%dsB' % len(p), p, int(e))
     pfx = p
 
     return (pfx, plen)
@@ -158,7 +158,7 @@ def str2pfx(strng):
 
 def isid2id(str):
 
-    str = string.join(string.split(str2hex(str), '.'), '')
+    str = str2hex(str).split('.').join('')
     str = "%s.%s.%s.%s" % (str[0:3], str[3:6], str[6:9], str[9:12])
 
     return str2id(str)
@@ -191,11 +191,11 @@ def prthex(pfx, str):
 
 def str2mac(str):
 
-    bytes = string.split(str, '.')
+    bytes = str.split('.')
     if len(bytes) != 6:
         return
 
-    bytes = [string.atoi(x, 16) for x in bytes]
+    bytes = [int(x, 16) for x in bytes]
     return struct.pack("BBB BBB",
                        bytes[0], bytes[1], bytes[2],
                        bytes[3], bytes[4], bytes[5])
